@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سنابل الخيرات للتموين - تسجيل الدخول</title>
+  
+  <!-- الخطوط -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+  <div class="login-container">
+    
+    <!-- الشعار والعنوان -->
+    <div class="login-header">
+      <div class="logo-circle">
+        <span class="logo-icon">🌾</span>
+      </div>
+      <h1 class="brand-name">سنابل الخيرات للتموين</h1>
+      <p class="brand-subtitle">بوابة الدخول لتجار الجملة</p>
+    </div>
+
+    <!-- نموذج تسجيل الدخول -->
+    <form id="loginForm" class="login-form">
+      
+      <div class="form-group">
+        <label for="username">اسم المستخدم</label>
+        <input 
+          type="text" 
+          id="username" 
+          name="username" 
+          placeholder="أدخل اسم المستخدم"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">كلمة المرور</label>
+        <div class="password-wrapper">
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="أدخل كلمة المرور"
+            autocomplete="current-password"
+            required
+          >
+          <button type="button" class="toggle-password" id="togglePassword" aria-label="إظهار كلمة المرور">
+            👁️
+          </button>
+        </div>
+      </div>
+
+      <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+      <button type="submit" class="btn-login" id="loginBtn">
+        <span class="btn-text">دخول</span>
+        <span class="btn-loader" style="display: none;">⏳</span>
+      </button>
+
+    </form>
+
+    <!-- قسم التواصل مع الأدمن -->
+    <div class="contact-section">
+      <div class="divider">
+        <span>ليس لديك حساب؟</span>
+      </div>
+      <p class="contact-text">
+        للحصول على أسعار الجملة، يرجى التواصل معنا لفتح حساب خاص بك
+      </p>
+      <a 
+        href="https://wa.me/961XXXXXXXXX" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="btn-whatsapp"
+        id="whatsappBtn"
+      >
+        <span class="whatsapp-icon">💬</span>
+        تواصل معنا عبر واتساب
+      </a>
+    </div>
+
+    <!-- التذييل -->
+    <div class="login-footer">
+      <p>© <span id="currentYear"></span> سنابل الخيرات للتموين - جميع الحقوق محفوظة</p>
+    </div>
+
+  </div>
+
+  <!-- JS -->
+  <script type="module" src="js/auth.js"></script>
+
+</body>
+</html>
