@@ -1,8 +1,8 @@
 /* ============================================
-   تنسيقات لوحة تحكم الأدمن
+   تنسيقات لوحة تحكم الأدمن - النسخة النهائية
    ============================================ */
 
-/* ===== الحاوية العامة ===== */
+/* ===== 1. الحاوية العامة ===== */
 .admin-body {
   display: flex;
   background-color: var(--offwhite);
@@ -13,7 +13,7 @@
 }
 
 /* ============================================
-   1. القائمة الجانبية (Sidebar)
+   2. القائمة الجانبية (Sidebar)
    ============================================ */
 .sidebar {
   width: 260px;
@@ -70,6 +70,7 @@
   margin-bottom: 5px;
   font-weight: 600;
   transition: 0.3s;
+  white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -85,6 +86,8 @@
 
 .nav-icon {
   font-size: 1.2rem;
+  min-width: 24px;
+  text-align: center;
 }
 
 .sidebar-footer {
@@ -105,6 +108,7 @@
   align-items: center;
   gap: 8px;
   transition: 0.3s;
+  cursor: pointer;
 }
 
 .btn-logout:hover {
@@ -113,7 +117,7 @@
 }
 
 /* ============================================
-   2. المحتوى الرئيسي
+   3. المحتوى الرئيسي
    ============================================ */
 .main-content {
   flex: 1;
@@ -166,7 +170,7 @@
 }
 
 /* ============================================
-   3. منطقة المحتوى
+   4. منطقة المحتوى
    ============================================ */
 .content-area {
   padding: 30px;
@@ -216,7 +220,7 @@
 }
 
 /* ============================================
-   4. شبكة المنتجات
+   5. شبكة المنتجات
    ============================================ */
 .products-grid {
   display: grid;
@@ -236,7 +240,7 @@
 }
 
 /* ============================================
-   5. النافذة المنبثقة (Modal)
+   6. النافذة المنبثقة (Modal)
    ============================================ */
 .modal-overlay {
   position: fixed;
@@ -332,28 +336,138 @@
 }
 
 /* ============================================
-   6. التجاوب مع الموبايل (Responsive)
+   7. كروت المنتجات
+   ============================================ */
+.product-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: 0.3s ease;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--gold);
+}
+
+.product-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-bottom: 2px solid var(--offwhite);
+}
+
+.product-info {
+  padding: 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-badge {
+  display: inline-block;
+  background: var(--offwhite);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+  align-self: flex-start;
+  font-weight: 700;
+}
+
+.product-title {
+  font-size: 1.1rem;
+  color: var(--black);
+  margin-bottom: 10px;
+}
+
+.product-price {
+  color: var(--black);
+  margin-bottom: 5px;
+}
+
+.product-price strong {
+  color: var(--gold-dark);
+  font-size: 1.2rem;
+}
+
+.product-unit-price {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: auto;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+}
+
+/* ============================================
+   8. التجاوب مع الموبايل (Responsive) - التصحيح النهائي
    ============================================ */
 @media (max-width: 900px) {
+  /* تصغير القائمة الجانبية */
   .sidebar {
     width: 70px;
+    overflow: hidden;
   }
+  
+  /* إخفاء النصوص من القائمة */
   .sidebar-header h2, 
   .sidebar-header p,
-  .nav-link span:not(.nav-icon), /* إخفاء النص وإبقاء الأيقونة */
+  .nav-link span:not(.nav-icon),
   .btn-logout span:not(:first-child) {
     display: none;
   }
-  .sidebar-header .logo-icon {
-    font-size: 30px;
+  
+  .sidebar-header {
+    padding: 15px 5px;
   }
+  
+  .sidebar-header .logo-icon {
+    font-size: 28px;
+    margin-bottom: 0;
+  }
+  
+  .sidebar-nav {
+    padding: 10px 5px;
+  }
+
   .nav-link {
     justify-content: center;
     padding: 15px 0;
+    font-size: 0; /* إخفاء أي نص متبقي */
   }
+  
+  .nav-icon {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+  
+  .btn-logout {
+    padding: 10px 0;
+    font-size: 1.2rem;
+    color: #ff6b6b;
+  }
+
+  /* تعديل مساحة المحتوى */
   .main-content {
     margin-right: 70px;
     width: calc(100% - 70px);
+  }
+
+  .top-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .content-area {
+    padding: 15px;
   }
 }
 
@@ -361,14 +475,30 @@
   .form-row {
     grid-template-columns: 1fr;
   }
+  
   .section-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
+  
   .search-box input {
     width: 100%;
   }
+  
   .search-box input:focus {
     width: 100%;
+  }
+
+  .top-header {
+    padding: 10px;
+  }
+  
+  .header-left h1 {
+    font-size: 1.2rem;
+  }
+  
+  .admin-profile {
+    width: 100%;
+    justify-content: center;
   }
 }
