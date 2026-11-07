@@ -1,0 +1,374 @@
+/* ============================================
+   تنسيقات لوحة تحكم الأدمن
+   ============================================ */
+
+/* ===== الحاوية العامة ===== */
+.admin-body {
+  display: flex;
+  background-color: var(--offwhite);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   1. القائمة الجانبية (Sidebar)
+   ============================================ */
+.sidebar {
+  width: 260px;
+  background-color: var(--black);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  right: 0; /* لأن الموقع RTL */
+  height: 100vh;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+  z-index: 100;
+  transition: 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 30px 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header .logo-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.sidebar-header h2 {
+  color: var(--gold);
+  font-size: 1.3rem;
+  margin-bottom: 5px;
+}
+
+.sidebar-header p {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 10px;
+  overflow-y: auto;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  color: #ccc;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  margin-bottom: 5px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.nav-link:hover {
+  background-color: rgba(255,255,255,0.05);
+  color: var(--gold);
+}
+
+.nav-link.active {
+  background-color: var(--gold);
+  color: var(--black);
+  font-weight: 700;
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.btn-logout:hover {
+  background: #ff6b6b;
+  color: white;
+}
+
+/* ============================================
+   2. المحتوى الرئيسي
+   ============================================ */
+.main-content {
+  flex: 1;
+  margin-right: 260px; /* مساحة للقائمة الجانبية */
+  padding: 0;
+  width: calc(100% - 260px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* الهيدر العلوي */
+.top-header {
+  background: var(--white);
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-left h1 {
+  font-size: 1.4rem;
+  color: var(--black);
+  margin: 0;
+}
+
+.admin-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--offwhite);
+  padding: 8px 15px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  font-weight: 700;
+  color: var(--black);
+}
+
+.admin-avatar {
+  background: var(--gold);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ============================================
+   3. منطقة المحتوى
+   ============================================ */
+.content-area {
+  padding: 30px;
+  flex: 1;
+}
+
+.content-section {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.content-section.active {
+  display: block;
+}
+
+/* شريط الأدوات (بحث + زر إضافة) */
+.section-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.search-box input {
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  width: 300px;
+  font-size: 0.95rem;
+  background: var(--white);
+  transition: 0.3s;
+}
+
+.search-box input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+  width: 350px;
+}
+
+/* زر الإضافة (تصغير الحجم شوي) */
+#addProductBtn {
+  width: auto;
+  padding: 12px 25px;
+  font-size: 1rem;
+}
+
+/* ============================================
+   4. شبكة المنتجات
+   ============================================ */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 50px;
+  background: var(--white);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-weight: 600;
+  border: 2px dashed var(--border);
+}
+
+/* ============================================
+   5. النافذة المنبثقة (Modal)
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: var(--white);
+  width: 100%;
+  max-width: 650px;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border);
+  background: var(--offwhite);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.modal-header h2 {
+  font-size: 1.3rem;
+  color: var(--black);
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.modal-close:hover {
+  color: var(--error);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 25px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* صفوف الحقول (حقلين جانب بعض) */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+}
+
+.modal-footer .btn {
+  width: auto;
+  min-width: 120px;
+}
+
+/* ============================================
+   6. التجاوب مع الموبايل (Responsive)
+   ============================================ */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 70px;
+  }
+  .sidebar-header h2, 
+  .sidebar-header p,
+  .nav-link span:not(.nav-icon), /* إخفاء النص وإبقاء الأيقونة */
+  .btn-logout span:not(:first-child) {
+    display: none;
+  }
+  .sidebar-header .logo-icon {
+    font-size: 30px;
+  }
+  .nav-link {
+    justify-content: center;
+    padding: 15px 0;
+  }
+  .main-content {
+    margin-right: 70px;
+    width: calc(100% - 70px);
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .section-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-box input {
+    width: 100%;
+  }
+  .search-box input:focus {
+    width: 100%;
+  }
+}
