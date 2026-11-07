@@ -1,19 +1,17 @@
 /* ============================================
-   تنسيقات لوحة تحكم الأدمن - النسخة النهائية
+   تنسيقات لوحة تحكم الأدمن - التصميم الجذري الجديد
    ============================================ */
 
-/* ===== 1. الحاوية العامة ===== */
 .admin-body {
   display: flex;
-  background-color: var(--offwhite);
+  background-color: #f4f6f8; /* لون خلفية أفتح وأريح للعين */
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
 }
 
 /* ============================================
-   2. القائمة الجانبية (Sidebar)
+   1. القائمة الجانبية (للشاشات الكبيرة)
    ============================================ */
 .sidebar {
   width: 260px;
@@ -23,54 +21,45 @@
   flex-direction: column;
   position: fixed;
   top: 0;
-  right: 0; /* لأن الموقع RTL */
+  right: 0;
   height: 100vh;
-  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+  box-shadow: -2px 0 15px rgba(0,0,0,0.1);
   z-index: 100;
-  transition: 0.3s ease;
 }
 
 .sidebar-header {
   padding: 30px 20px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-header .logo-icon {
-  font-size: 40px;
-  display: block;
-  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-header h2 {
   color: var(--gold);
-  font-size: 1.3rem;
-  margin-bottom: 5px;
+  font-size: 1.4rem;
+  font-weight: 800;
 }
 
 .sidebar-header p {
-  color: #999;
+  color: #888;
   font-size: 0.85rem;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: 20px 10px;
-  overflow-y: auto;
+  padding: 20px 15px;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  color: #ccc;
+  gap: 15px;
+  padding: 14px 20px;
+  color: #b0b0b0;
   text-decoration: none;
-  border-radius: var(--radius-sm);
-  margin-bottom: 5px;
+  border-radius: 12px;
+  margin-bottom: 8px;
   font-weight: 600;
-  transition: 0.3s;
-  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
 .nav-link:hover {
@@ -81,34 +70,29 @@
 .nav-link.active {
   background-color: var(--gold);
   color: var(--black);
-  font-weight: 700;
+  font-weight: 800;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
 }
 
 .nav-icon {
-  font-size: 1.2rem;
-  min-width: 24px;
-  text-align: center;
+  font-size: 1.3rem;
 }
 
 .sidebar-footer {
   padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .btn-logout {
   width: 100%;
-  padding: 12px;
-  background: transparent;
+  padding: 14px;
+  background: rgba(231, 76, 60, 0.1);
   color: #ff6b6b;
-  border: 1px solid #ff6b6b;
-  border-radius: var(--radius-sm);
+  border: none;
+  border-radius: 12px;
   font-weight: 700;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  transition: 0.3s;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .btn-logout:hover {
@@ -117,66 +101,61 @@
 }
 
 /* ============================================
-   3. المحتوى الرئيسي
+   2. المحتوى الرئيسي
    ============================================ */
 .main-content {
   flex: 1;
-  margin-right: 260px; /* مساحة للقائمة الجانبية */
-  padding: 0;
+  margin-right: 260px;
   width: calc(100% - 260px);
   display: flex;
   flex-direction: column;
 }
 
-/* الهيدر العلوي */
 .top-header {
   background: var(--white);
-  padding: 20px 30px;
+  padding: 15px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
   position: sticky;
   top: 0;
   z-index: 50;
 }
 
 .header-left h1 {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: var(--black);
-  margin: 0;
 }
 
 .admin-profile {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--offwhite);
-  padding: 8px 15px;
+  background: #f4f6f8;
+  padding: 6px 16px;
   border-radius: 30px;
-  border: 1px solid var(--border);
   font-weight: 700;
-  color: var(--black);
+  border: 1px solid #e0e0e0;
 }
 
 .admin-avatar {
   background: var(--gold);
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* ============================================
-   4. منطقة المحتوى
-   ============================================ */
 .content-area {
   padding: 30px;
-  flex: 1;
 }
 
+/* ============================================
+   3. العناصر الداخلية (بحث، أزرار، كروت)
+   ============================================ */
 .content-section {
   display: none;
   animation: fadeIn 0.4s ease;
@@ -186,319 +165,229 @@
   display: block;
 }
 
-/* شريط الأدوات (بحث + زر إضافة) */
 .section-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
   gap: 15px;
-  flex-wrap: wrap;
 }
 
 .search-box input {
-  padding: 12px 20px;
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  width: 300px;
-  font-size: 0.95rem;
+  padding: 14px 20px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  width: 320px;
   background: var(--white);
-  transition: 0.3s;
+  font-size: 1rem;
 }
 
 .search-box input:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
-  width: 350px;
+  outline: none;
 }
 
-/* زر الإضافة (تصغير الحجم شوي) */
 #addProductBtn {
   width: auto;
-  padding: 12px 25px;
+  padding: 14px 28px;
   font-size: 1rem;
+  border-radius: 12px;
 }
 
-/* ============================================
-   5. شبكة المنتجات
-   ============================================ */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
 }
 
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 50px;
+  padding: 60px 20px;
   background: var(--white);
-  border-radius: var(--radius);
-  color: var(--text-muted);
+  border-radius: 16px;
+  color: #888;
   font-weight: 600;
-  border: 2px dashed var(--border);
+  border: 2px dashed #ddd;
 }
 
-/* ============================================
-   6. النافذة المنبثقة (Modal)
-   ============================================ */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
+/* كروت المنتجات */
+.product-card {
   background: var(--white);
-  width: 100%;
-  max-width: 650px;
-  border-radius: var(--radius);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 25px;
-  border-bottom: 1px solid var(--border);
-  background: var(--offwhite);
-  border-radius: var(--radius) var(--radius) 0 0;
-}
-
-.modal-header h2 {
-  font-size: 1.3rem;
-  color: var(--black);
-  margin: 0;
-}
-
-.modal-close {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
   transition: 0.3s;
 }
 
-.modal-close:hover {
-  color: var(--error);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: 25px;
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* صفوف الحقول (حقلين جانب بعض) */
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.form-hint {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-  margin-top: 10px;
-}
-
-.modal-footer .btn {
-  width: auto;
-  min-width: 120px;
-}
-
-/* ============================================
-   7. كروت المنتجات
-   ============================================ */
-.product-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: 0.3s ease;
-  border: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-}
-
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--gold);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
 .product-img {
   width: 100%;
-  height: 180px;
+  height: 200px;
   object-fit: cover;
-  border-bottom: 2px solid var(--offwhite);
 }
 
 .product-info {
-  padding: 15px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  padding: 20px;
 }
 
 .product-badge {
+  background: #f4f6f8;
+  color: #555;
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
   display: inline-block;
-  background: var(--offwhite);
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 20px;
-  margin-bottom: 8px;
-  align-self: flex-start;
-  font-weight: 700;
 }
 
 .product-title {
-  font-size: 1.1rem;
-  color: var(--black);
-  margin-bottom: 10px;
-}
-
-.product-price {
-  color: var(--black);
-  margin-bottom: 5px;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
 }
 
 .product-price strong {
   color: var(--gold-dark);
-  font-size: 1.2rem;
-}
-
-.product-unit-price {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-top: auto;
-  border-top: 1px dashed var(--border);
-  padding-top: 8px;
+  font-size: 1.3rem;
 }
 
 /* ============================================
-   8. التجاوب مع الموبايل (Responsive) - التصحيح النهائي
+   4. النافذة المنبثقة (Modal)
    ============================================ */
-@media (max-width: 900px) {
-  /* تصغير القائمة الجانبية */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000; padding: 20px;
+}
+
+.modal-content {
+  background: var(--white);
+  width: 100%; max-width: 600px;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+}
+
+.modal-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+  display: flex; justify-content: space-between; align-items: center;
+  background: #fafafa; border-radius: 20px 20px 0 0;
+}
+
+.modal-body { padding: 25px; overflow-y: auto; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 15px; padding-top: 20px; border-top: 1px solid #eee; }
+
+/* ============================================
+   5. التغيير الجذري للموبايل (Mobile Menu)
+   ============================================ */
+
+/* إخفاء القائمة الجانبية تماماً على الموبايل */
+@media (max-width: 850px) {
   .sidebar {
-    width: 70px;
-    overflow: hidden;
+    display: none; /* إخفاء تام */
   }
   
-  /* إخفاء النصوص من القائمة */
-  .sidebar-header h2, 
-  .sidebar-header p,
-  .nav-link span:not(.nav-icon),
-  .btn-logout span:not(:first-child) {
-    display: none;
-  }
-  
-  .sidebar-header {
-    padding: 15px 5px;
-  }
-  
-  .sidebar-header .logo-icon {
-    font-size: 28px;
-    margin-bottom: 0;
-  }
-  
-  .sidebar-nav {
-    padding: 10px 5px;
-  }
-
-  .nav-link {
-    justify-content: center;
-    padding: 15px 0;
-    font-size: 0; /* إخفاء أي نص متبقي */
-  }
-  
-  .nav-icon {
-    font-size: 1.5rem;
-    margin: 0;
-  }
-  
-  .btn-logout {
-    padding: 10px 0;
-    font-size: 1.2rem;
-    color: #ff6b6b;
-  }
-
-  /* تعديل مساحة المحتوى */
   .main-content {
-    margin-right: 70px;
-    width: calc(100% - 70px);
+    margin-right: 0;
+    width: 100%;
+    padding-bottom: 80px; /* مساحة عشان ما تغطي القائمة السفلية المحتوى */
   }
 
   .top-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-    padding: 15px;
+    padding: 15px 20px;
+  }
+
+  .header-left h1 {
+    font-size: 1.1rem;
+  }
+
+  .admin-profile span:last-child {
+    display: none; /* إخفاء اسم الأدمن على الموبايل لتوفير مساحة */
   }
 
   .content-area {
     padding: 15px;
   }
-}
 
-@media (max-width: 600px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
   .section-toolbar {
     flex-direction: column;
-    align-items: stretch;
+    gap: 15px;
   }
-  
+
   .search-box input {
     width: 100%;
   }
-  
-  .search-box input:focus {
+
+  #addProductBtn {
     width: 100%;
   }
 
-  .top-header {
-    padding: 10px;
+  .form-row {
+    grid-template-columns: 1fr;
   }
-  
-  .header-left h1 {
-    font-size: 1.2rem;
-  }
-  
-  .admin-profile {
+
+  /* تحويل القائمة الجانبية لشريط سفلي أنيق */
+  .sidebar {
+    display: flex;
+    flex-direction: row;
     width: 100%;
-    justify-content: center;
+    height: 70px;
+    top: auto;
+    bottom: 0;
+    right: 0;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    background-color: var(--white); /* خلفية بيضاء للشريط السفلي */
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 10px;
+    border-top: 2px solid var(--gold);
+  }
+
+  .sidebar-header, .sidebar-footer {
+    display: none; /* إخفاء الشعار وزر الخروج من الشريط السفلي */
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    flex-direction: column;
+    padding: 10px;
+    margin: 0;
+    gap: 5px;
+    color: #777;
+    border-radius: 10px;
+  }
+
+  .nav-link.active {
+    background: var(--offwhite);
+    color: var(--gold-dark);
+    box-shadow: none;
+  }
+
+  .nav-link span:not(.nav-icon) {
+    display: block; /* إظهار النص تحت الأيقونة */
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .nav-icon {
+    font-size: 1.4rem;
   }
 }
