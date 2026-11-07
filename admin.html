@@ -14,7 +14,7 @@
 </head>
 <body class="admin-body">
 
-  <!-- ===== القائمة الجانبية ===== -->
+  <!-- ===== القائمة الجانبية (للشاشات الكبيرة) ===== -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <span class="logo-icon">🌾</span>
@@ -24,28 +24,28 @@
 
     <nav class="sidebar-nav">
       <a href="#" class="nav-link active" data-section="products">
-        <span class="nav-icon">📦</span> إدارة المنتجات
+        <span class="nav-icon">📦</span> <span>إدارة المنتجات</span>
       </a>
       <a href="#" class="nav-link" data-section="categories">
-        <span class="nav-icon">🗂️</span> التصنيفات
+        <span class="nav-icon">🗂️</span> <span>التصنيفات</span>
       </a>
       <a href="#" class="nav-link" data-section="offers">
-        <span class="nav-icon">🎁</span> العروض
+        <span class="nav-icon">🎁</span> <span>العروض</span>
       </a>
       <a href="#" class="nav-link" data-section="customers">
-        <span class="nav-icon">👥</span> الزبائن
+        <span class="nav-icon">👥</span> <span>الزبائن</span>
       </a>
       <a href="#" class="nav-link" data-section="notifications">
-        <span class="nav-icon">🔔</span> الإشعارات
+        <span class="nav-icon">🔔</span> <span>الإشعارات</span>
       </a>
       <a href="#" class="nav-link" data-section="settings">
-        <span class="nav-icon">⚙️</span> الإعدادات
+        <span class="nav-icon">⚙️</span> <span>الإعدادات</span>
       </a>
     </nav>
 
     <div class="sidebar-footer">
       <button id="logoutBtn" class="btn-logout">
-        <span>🚪</span> تسجيل خروج
+        <span>🚪</span> <span>تسجيل خروج</span>
       </button>
     </div>
   </aside>
@@ -66,41 +66,44 @@
       </div>
     </header>
 
-    <!-- منطقة المحتوى (تتغير حسب القسم) -->
+    <!-- منطقة المحتوى -->
     <div class="content-area">
       
-      <!-- قسم المنتجات -->
+      <!-- 1. قسم المنتجات -->
       <section id="section-products" class="content-section active">
-        
         <div class="section-toolbar">
           <div class="search-box">
             <input type="text" id="searchProducts" placeholder="🔍 ابحث عن منتج...">
           </div>
-          <button class="btn btn-primary" id="addProductBtn">
-            ➕ إضافة منتج جديد
-          </button>
+          <button class="btn btn-primary" id="addProductBtn">➕ إضافة منتج جديد</button>
         </div>
 
-        <!-- شبكة المنتجات -->
         <div class="products-grid" id="productsGrid">
-          <div class="empty-state">
-            <p>⏳ جاري تحميل المنتجات...</p>
-          </div>
+          <div class="empty-state"><p>⏳ جاري تحميل المنتجات...</p></div>
         </div>
-
       </section>
 
-      <!-- باقي الأقسام (رح نعملها لاحقاً) -->
+      <!-- 2. قسم الزبائن -->
+      <section id="section-customers" class="content-section">
+        <div class="section-toolbar">
+          <div class="search-box">
+            <input type="text" id="searchCustomers" placeholder="🔍 ابحث عن زبون...">
+          </div>
+          <button class="btn btn-primary" id="addCustomerBtn">➕ إضافة زبون جديد</button>
+        </div>
+        
+        <div class="products-grid" id="customersGrid">
+          <div class="empty-state"><p>⏳ جاري تحميل الزبائن...</p></div>
+        </div>
+      </section>
+
+      <!-- باقي الأقسام -->
       <section id="section-categories" class="content-section">
         <div class="empty-state"><p>قسم التصنيفات - قيد الإنشاء</p></div>
       </section>
       
       <section id="section-offers" class="content-section">
         <div class="empty-state"><p>قسم العروض - قيد الإنشاء</p></div>
-      </section>
-      
-      <section id="section-customers" class="content-section">
-        <div class="empty-state"><p>قسم الزبائن - قيد الإنشاء</p></div>
       </section>
       
       <section id="section-notifications" class="content-section">
@@ -146,13 +149,11 @@
             <input type="number" id="productPrice" step="0.01" min="0" required placeholder="0.00">
           </div>
 
-          <!-- يظهر فقط إذا كان شوال -->
           <div class="form-group hidden" id="weightGroup">
             <label for="productWeight">وزن الشوال (كغ) *</label>
             <input type="number" id="productWeight" step="0.1" min="0" placeholder="مثال: 50">
           </div>
 
-          <!-- يظهر فقط إذا كان صندوق -->
           <div class="form-group hidden" id="unitsGroup">
             <label for="productUnits">عدد الوحدات بالصندوق *</label>
             <input type="number" id="productUnits" step="1" min="1" placeholder="مثال: 12">
@@ -174,6 +175,39 @@
           <button type="button" class="btn btn-outline" id="cancelBtn">إلغاء</button>
           <button type="submit" class="btn btn-primary" id="saveProductBtn">
             <span class="btn-text">حفظ المنتج</span>
+            <span class="btn-loader hidden">⏳ جاري الحفظ...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== نافذة إضافة زبون ===== -->
+  <div class="modal-overlay hidden" id="customerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>إضافة زبون جديد</h2>
+        <button class="modal-close" id="closeCustomerModal">✖</button>
+      </div>
+      <form id="customerForm" class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>اسم المستخدم (للدخول) *</label>
+            <input type="text" id="custUsername" required placeholder="مثال: ahmad123">
+          </div>
+          <div class="form-group">
+            <label>الاسم الظاهر *</label>
+            <input type="text" id="custDisplayName" required placeholder="مثال: أحمد للتجارة">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>رقم الهاتف *</label>
+          <input type="text" id="custPhone" required placeholder="مثال: 96171447409">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelCustBtn">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="saveCustBtn">
+            <span class="btn-text">حفظ بيانات الزبون</span>
             <span class="btn-loader hidden">⏳ جاري الحفظ...</span>
           </button>
         </div>
