@@ -1,13 +1,12 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ==========================================
 // 1. حماية الصفحة وجلب بيانات الأدمن
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // إذا ما في مستخدم مسجل، طردو لصفحة الدخول
     window.location.href = 'index.html';
     return;
   }
@@ -17,13 +16,11 @@ onAuthStateChanged(auth, async (user) => {
     if (userDoc.exists()) {
       const userData = userDoc.data();
       
-      // إذا مو أدمن أو محظور، طردو
       if (userData.role !== 'admin' || userData.isBlocked) {
         window.location.href = 'index.html';
         return;
       }
       
-      // عرض اسم الأدمن
       document.getElementById('adminName').textContent = userData.displayName || userData.username;
     } else {
       window.location.href = 'index.html';
@@ -34,16 +31,14 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// ==========================================
-// 2. تسجيل الخروج
-// ==========================================
+// تسجيل الخروج
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 });
 
 // ==========================================
-// 3. التنقل بين أقسام القائمة الجانبية
+// 2. التنقل بين أقسام القائمة
 // ==========================================
 const navLinks = document.querySelectorAll('.nav-link');
 const sections = document.querySelectorAll('.content-section');
@@ -52,23 +47,18 @@ const pageTitle = document.getElementById('pageTitle');
 navLinks.forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
-    
-    // إزالة active من الكل
     navLinks.forEach(l => l.classList.remove('active'));
     sections.forEach(s => s.classList.remove('active'));
     
-    // إضافة active للعنصر المضغوط
     link.classList.add('active');
     const sectionId = link.getAttribute('data-section');
     document.getElementById(`section-${sectionId}`).classList.add('active');
-    
-    // تغيير عنوان الصفحة
-    pageTitle.textContent = link.textContent.trim();
+    pageTitle.textContent = link.querySelector('span:not(.nav-icon)').textContent;
   });
 });
 
 // ==========================================
-// 4. النافذة المنبثقة (Modal) والحقول الذكية
+// 3. إدارة المنتجات (نافذة، حفظ، عرض)
 // ==========================================
 const productModal = document.getElementById('productModal');
 const addProductBtn = document.getElementById('addProductBtn');
@@ -78,17 +68,17 @@ const productForm = document.getElementById('productForm');
 const productCategory = document.getElementById('productCategory');
 const weightGroup = document.getElementById('weightGroup');
 const unitsGroup = document.getElementById('unitsGroup');
+const productsGrid = document.getElementById('productsGrid');
+let allProducts = [];
 
-// فتح النافذة (إضافة جديد)
 function openModal() {
   productForm.reset();
   document.getElementById('productId').value = '';
   document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
-  productModal.classList.remove('hidden');
   toggleCategoryFields();
+  productModal.classList.remove('hidden');
 }
 
-// إغلاق النافذة
 function closeModal() {
   productModal.classList.add('hidden');
 }
@@ -96,13 +86,8 @@ function closeModal() {
 addProductBtn.addEventListener('click', openModal);
 closeModalBtn.addEventListener('click', closeModal);
 cancelBtn.addEventListener('click', closeModal);
+productModal.addEventListener('click', (e) => { if (e.target === productModal) closeModal(); });
 
-// إغلاق عند الضغط خارج النافذة
-productModal.addEventListener('click', (e) => {
-  if (e.target === productModal) closeModal();
-});
-
-// الحقول الذكية (صندوق ↔ شوال)
 function toggleCategoryFields() {
   if (productCategory.value === 'bag') {
     weightGroup.classList.remove('hidden');
@@ -114,16 +99,9 @@ function toggleCategoryFields() {
 }
 productCategory.addEventListener('change', toggleCategoryFields);
 
-// ==========================================
-// 5. حفظ المنتج في Firebase
-// ==========================================
-const saveProductBtn = document.getElementById('saveProductBtn');
-const btnText = saveProductBtn.querySelector('.btn-text');
-const btnLoader = saveProductBtn.querySelector('.btn-loader');
-
+// حفظ المنتج
 productForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
   const productId = document.getElementById('productId').value;
   const name = document.getElementById('productName').value.trim();
   const category = productCategory.value;
@@ -132,76 +110,52 @@ productForm.addEventListener('submit', async (e) => {
   const description = document.getElementById('productDescription').value.trim();
   
   const productData = {
-    name,
-    category,
-    price,
-    imageUrl,
-    description,
-    isActive: true,
-    updatedAt: serverTimestamp()
+    name, category, price, imageUrl, description,
+    isActive: true, updatedAt: serverTimestamp()
   };
   
-  // إضافة حقول حسب التصنيف
   if (category === 'bag') {
     productData.weightKg = parseFloat(document.getElementById('productWeight').value);
-    if (!productData.weightKg || productData.weightKg <= 0) {
-      alert("الرجاء إدخال وزن صحيح للشوال");
-      return;
-    }
+    if (!productData.weightKg || productData.weightKg <= 0) return alert("الرجاء إدخال وزن صحيح للشوال");
   } else {
     productData.unitsPerBox = parseInt(document.getElementById('productUnits').value);
-    if (!productData.unitsPerBox || productData.unitsPerBox <= 0) {
-      alert("الرجاء إدخال عدد وحدات صحيح للصندوق");
-      return;
-    }
+    if (!productData.unitsPerBox || productData.unitsPerBox <= 0) return alert("الرجاء إدخال عدد وحدات صحيح للصندوق");
   }
   
-  // حالة التحميل
+  const saveBtn = document.getElementById('saveProductBtn');
+  const btnText = saveBtn.querySelector('.btn-text');
+  const btnLoader = saveBtn.querySelector('.btn-loader');
+  
   btnText.classList.add('hidden');
   btnLoader.classList.remove('hidden');
-  saveProductBtn.disabled = true;
+  saveBtn.disabled = true;
   
   try {
     if (productId) {
-      // تعديل منتج موجود
-      const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await updateDoc(doc(db, "products", productId), productData);
       alert("تم تعديل المنتج بنجاح ✅");
     } else {
-      // إضافة منتج جديد
       productData.createdAt = serverTimestamp();
       await addDoc(collection(db, "products"), productData);
       alert("تمت إضافة المنتج بنجاح ✅");
     }
     closeModal();
   } catch (error) {
-    console.error("خطأ في الحفظ:", error);
     alert("حدث خطأ أثناء الحفظ: " + error.message);
   } finally {
-    // إعادة الزر لحالته
     btnText.classList.remove('hidden');
     btnLoader.classList.add('hidden');
-    saveProductBtn.disabled = false;
+    saveBtn.disabled = false;
   }
 });
 
-// ==========================================
-// 6. عرض المنتجات لايف من Firebase
-// ==========================================
-const productsGrid = document.getElementById('productsGrid');
-const searchInput = document.getElementById('searchProducts');
-let allProducts = [];
-
-const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-
-onSnapshot(q, (snapshot) => {
+// عرض المنتجات
+const qProducts = query(collection(db, "products"), orderBy("createdAt", "desc"));
+onSnapshot(qProducts, (snapshot) => {
   allProducts = [];
-  snapshot.forEach((doc) => {
-    allProducts.push({ id: doc.id, ...doc.data() });
-  });
+  snapshot.forEach((doc) => allProducts.push({ id: doc.id, ...doc.data() }));
   renderProducts(allProducts);
 }, (error) => {
-  console.error("خطأ في جلب المنتجات:", error);
   productsGrid.innerHTML = `<div class="empty-state"><p>حدث خطأ في جلب المنتجات</p></div>`;
 });
 
@@ -212,16 +166,12 @@ function renderProducts(products) {
   }
 
   productsGrid.innerHTML = products.map(product => {
-    // حساب سعر الكيلو أو الحبة
     let unitPriceText = '';
     if (product.category === 'bag' && product.weightKg) {
-      const kgPrice = (product.price / product.weightKg).toFixed(2);
-      unitPriceText = `سعر الكيلو: $${kgPrice}`;
+      unitPriceText = `سعر الكيلو: $${(product.price / product.weightKg).toFixed(2)}`;
     } else if (product.category === 'box' && product.unitsPerBox) {
-      const unitPrice = (product.price / product.unitsPerBox).toFixed(2);
-      unitPriceText = `سعر الحبة: $${unitPrice}`;
+      unitPriceText = `سعر الحبة: $${(product.price / product.unitsPerBox).toFixed(2)}`;
     }
-
     const categoryLabel = product.category === 'bag' ? '🎒 شوال' : '📦 صندوق';
 
     return `
@@ -232,17 +182,149 @@ function renderProducts(products) {
           <h3 class="product-title">${product.name}</h3>
           <p class="product-price">السعر: <strong>$${product.price}</strong></p>
           <p class="product-unit-price">${unitPriceText}</p>
+          <div class="product-actions">
+            <button class="btn-edit" onclick="editProduct('${product.id}')">🖊️ تعديل</button>
+            <button class="btn-delete" onclick="deleteProduct('${product.id}')">🗑️ حذف</button>
+          </div>
         </div>
       </div>
     `;
   }).join('');
 }
 
-// ==========================================
-// 7. البحث
-// ==========================================
-searchInput.addEventListener('input', (e) => {
+// تعديل وحذف المنتج
+window.editProduct = (id) => {
+  const product = allProducts.find(p => p.id === id);
+  if (!product) return;
+  document.getElementById('productId').value = product.id;
+  document.getElementById('productName').value = product.name;
+  document.getElementById('productPrice').value = product.price;
+  document.getElementById('productImage').value = product.imageUrl;
+  document.getElementById('productDescription').value = product.description || '';
+  productCategory.value = product.category;
+  
+  if (product.category === 'bag') {
+    document.getElementById('productWeight').value = product.weightKg || '';
+  } else {
+    document.getElementById('productUnits').value = product.unitsPerBox || '';
+  }
+  
+  document.getElementById('modalTitle').textContent = 'تعديل المنتج';
+  toggleCategoryFields();
+  productModal.classList.remove('hidden');
+};
+
+window.deleteProduct = async (id) => {
+  if (confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟')) {
+    try { await deleteDoc(doc(db, "products", id)); } 
+    catch (error) { alert("حدث خطأ أثناء الحذف: " + error.message); }
+  }
+};
+
+// البحث في المنتجات
+document.getElementById('searchProducts').addEventListener('input', (e) => {
   const term = e.target.value.trim().toLowerCase();
-  const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
-  renderProducts(filtered);
+  renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
+});
+
+// ==========================================
+// 4. إدارة الزبائن
+// ==========================================
+const customerModal = document.getElementById('customerModal');
+const addCustomerBtn = document.getElementById('addCustomerBtn');
+const closeCustomerModal = document.getElementById('closeCustomerModal');
+const cancelCustBtn = document.getElementById('cancelCustBtn');
+const customerForm = document.getElementById('customerForm');
+const customersGrid = document.getElementById('customersGrid');
+let allCustomers = [];
+
+addCustomerBtn.addEventListener('click', () => {
+  customerForm.reset();
+  customerModal.classList.remove('hidden');
+});
+closeCustomerModal.addEventListener('click', () => customerModal.classList.add('hidden'));
+cancelCustBtn.addEventListener('click', () => customerModal.classList.add('hidden'));
+
+customerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const saveBtn = document.getElementById('saveCustBtn');
+  const btnText = saveBtn.querySelector('.btn-text');
+  const btnLoader = saveBtn.querySelector('.btn-loader');
+  
+  const username = document.getElementById('custUsername').value.trim().toLowerCase();
+  const displayName = document.getElementById('custDisplayName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  saveBtn.disabled = true;
+  
+  try {
+    await setDoc(doc(db, "users", username), {
+      username, displayName, phone,
+      role: 'customer', isBlocked: false, createdAt: serverTimestamp()
+    });
+    alert("تم حفظ بيانات الزبون!\n\n⚠️ تنبيه: يجب الذهاب إلى Firebase Console -> Authentication وإنشاء حساب له بالإيميل:\n" + username + "@sanabel.local\nلتتمكن من تسجيل الدخول.");
+    customerModal.classList.add('hidden');
+  } catch (error) {
+    alert("خطأ: " + error.message);
+  } finally {
+    btnText.classList.remove('hidden');
+    btnLoader.classList.add('hidden');
+    saveBtn.disabled = false;
+  }
+});
+
+const qCustomers = query(collection(db, "users"), orderBy("createdAt", "desc"));
+onSnapshot(qCustomers, (snapshot) => {
+  allCustomers = [];
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    if (data.role !== 'admin') allCustomers.push({ id: docSnap.id, ...data });
+  });
+  renderCustomers(allCustomers);
+});
+
+function renderCustomers(customers) {
+  if (customers.length === 0) {
+    customersGrid.innerHTML = `<div class="empty-state"><p>لا يوجد زبائن بعد.</p></div>`;
+    return;
+  }
+
+  customersGrid.innerHTML = customers.map(cust => {
+    const statusClass = cust.isBlocked ? 'blocked' : 'active';
+    const statusText = cust.isBlocked ? '🔴 محظور' : '🟢 نشط';
+    return `
+      <div class="product-card">
+        <div class="product-info">
+          <span class="product-badge ${statusClass}">${statusText}</span>
+          <h3 class="product-title">${cust.displayName || cust.username}</h3>
+          <p style="font-size:0.9rem; color:#555;">👤 ${cust.username}</p>
+          <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">📞 ${cust.phone}</p>
+          <div class="product-actions">
+            <button class="btn-edit" onclick="toggleBlockCustomer('${cust.id}', ${cust.isBlocked})">
+              ${cust.isBlocked ? 'فك الحظر' : 'حظر'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.toggleBlockCustomer = async (id, currentStatus) => {
+  const action = currentStatus ? 'فك الحظر عن' : 'حظر';
+  if (!confirm(`هل أنت متأكد من ${action} هذا الزبون؟`)) return;
+  try { await updateDoc(doc(db, "users", id), { isBlocked: !currentStatus }); } 
+  catch (error) { alert("خطأ: " + error.message); }
+};
+
+// البحث في الزبائن
+document.getElementById('searchCustomers').addEventListener('input', (e) => {
+  const term = e.target.value.trim().toLowerCase();
+  const filtered = allCustomers.filter(c => 
+    (c.displayName && c.displayName.toLowerCase().includes(term)) || 
+    (c.username && c.username.toLowerCase().includes(term))
+  );
+  renderCustomers(filtered);
 });
