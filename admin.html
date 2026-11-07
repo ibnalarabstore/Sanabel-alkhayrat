@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم - سنابل الخيرات</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ===== القائمة الجانبية ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">🌾</span>
+      <h2>سنابل الخيرات</h2>
+      <p>لوحة التحكم</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-link active" data-section="products">
+        <span class="nav-icon">📦</span> إدارة المنتجات
+      </a>
+      <a href="#" class="nav-link" data-section="categories">
+        <span class="nav-icon">🗂️</span> التصنيفات
+      </a>
+      <a href="#" class="nav-link" data-section="offers">
+        <span class="nav-icon">🎁</span> العروض
+      </a>
+      <a href="#" class="nav-link" data-section="customers">
+        <span class="nav-icon">👥</span> الزبائن
+      </a>
+      <a href="#" class="nav-link" data-section="notifications">
+        <span class="nav-icon">🔔</span> الإشعارات
+      </a>
+      <a href="#" class="nav-link" data-section="settings">
+        <span class="nav-icon">⚙️</span> الإعدادات
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-logout">
+        <span>🚪</span> تسجيل خروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== المحتوى الرئيسي ===== -->
+  <main class="main-content">
+    
+    <!-- الهيدر -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 id="pageTitle">إدارة المنتجات</h1>
+      </div>
+      <div class="header-right">
+        <div class="admin-profile">
+          <span class="admin-avatar">👤</span>
+          <span id="adminName">جاري التحميل...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- منطقة المحتوى (تتغير حسب القسم) -->
+    <div class="content-area">
+      
+      <!-- قسم المنتجات -->
+      <section id="section-products" class="content-section active">
+        
+        <div class="section-toolbar">
+          <div class="search-box">
+            <input type="text" id="searchProducts" placeholder="🔍 ابحث عن منتج...">
+          </div>
+          <button class="btn btn-primary" id="addProductBtn">
+            ➕ إضافة منتج جديد
+          </button>
+        </div>
+
+        <!-- شبكة المنتجات -->
+        <div class="products-grid" id="productsGrid">
+          <div class="empty-state">
+            <p>⏳ جاري تحميل المنتجات...</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- باقي الأقسام (رح نعملها لاحقاً) -->
+      <section id="section-categories" class="content-section">
+        <div class="empty-state"><p>قسم التصنيفات - قيد الإنشاء</p></div>
+      </section>
+      
+      <section id="section-offers" class="content-section">
+        <div class="empty-state"><p>قسم العروض - قيد الإنشاء</p></div>
+      </section>
+      
+      <section id="section-customers" class="content-section">
+        <div class="empty-state"><p>قسم الزبائن - قيد الإنشاء</p></div>
+      </section>
+      
+      <section id="section-notifications" class="content-section">
+        <div class="empty-state"><p>قسم الإشعارات - قيد الإنشاء</p></div>
+      </section>
+      
+      <section id="section-settings" class="content-section">
+        <div class="empty-state"><p>قسم الإعدادات - قيد الإنشاء</p></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===== نافذة إضافة/تعديل منتج ===== -->
+  <div class="modal-overlay hidden" id="productModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">إضافة منتج جديد</h2>
+        <button class="modal-close" id="closeModalBtn">✖</button>
+      </div>
+
+      <form id="productForm" class="modal-body">
+        <input type="hidden" id="productId" value="">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productName">اسم المنتج *</label>
+            <input type="text" id="productName" required placeholder="مثال: أرز بسمتي">
+          </div>
+
+          <div class="form-group">
+            <label for="productCategory">التصنيف *</label>
+            <select id="productCategory" required>
+              <option value="box">📦 صندوق</option>
+              <option value="bag">🎒 شوال</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="productPrice">السعر الإجمالي (دولار) *</label>
+            <input type="number" id="productPrice" step="0.01" min="0" required placeholder="0.00">
+          </div>
+
+          <!-- يظهر فقط إذا كان شوال -->
+          <div class="form-group hidden" id="weightGroup">
+            <label for="productWeight">وزن الشوال (كغ) *</label>
+            <input type="number" id="productWeight" step="0.1" min="0" placeholder="مثال: 50">
+          </div>
+
+          <!-- يظهر فقط إذا كان صندوق -->
+          <div class="form-group hidden" id="unitsGroup">
+            <label for="productUnits">عدد الوحدات بالصندوق *</label>
+            <input type="number" id="productUnits" step="1" min="1" placeholder="مثال: 12">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="productImage">رابط صورة المنتج (ImgBB) *</label>
+          <input type="url" id="productImage" required placeholder="https://i.ibb.co/...">
+          <small class="form-hint">ارفع الصورة على ImgBB وضع الرابط المباشر هنا</small>
+        </div>
+
+        <div class="form-group">
+          <label for="productDescription">وصف المنتج (اختياري)</label>
+          <textarea id="productDescription" rows="3" placeholder="وصف مختصر للمنتج..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelBtn">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="saveProductBtn">
+            <span class="btn-text">حفظ المنتج</span>
+            <span class="btn-loader hidden">⏳ جاري الحفظ...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
