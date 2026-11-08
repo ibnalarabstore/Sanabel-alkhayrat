@@ -14,7 +14,7 @@
 </head>
 <body class="admin-body">
 
-  <!-- ===== القائمة الجانبية (للشاشات الكبيرة) ===== -->
+  <!-- ===== القائمة الجانبية ===== -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <span class="logo-icon">🌾</span>
@@ -53,7 +53,6 @@
   <!-- ===== المحتوى الرئيسي ===== -->
   <main class="main-content">
     
-    <!-- الهيدر -->
     <header class="top-header">
       <div class="header-left">
         <h1 id="pageTitle">إدارة المنتجات</h1>
@@ -66,7 +65,6 @@
       </div>
     </header>
 
-    <!-- منطقة المحتوى -->
     <div class="content-area">
       
       <!-- 1. قسم المنتجات -->
@@ -160,10 +158,24 @@
           </div>
         </div>
 
+        <!-- رفع الصورة -->
         <div class="form-group">
-          <label for="productImage">رابط صورة المنتج (ImgBB) *</label>
-          <input type="url" id="productImage" required placeholder="https://i.ibb.co/...">
-          <small class="form-hint">ارفع الصورة على ImgBB وضع الرابط المباشر هنا</small>
+          <label>صورة المنتج *</label>
+          <div class="image-upload-wrapper">
+            <input type="file" id="productImageFile" accept="image/*" class="hidden">
+            <input type="hidden" id="productImage" required> 
+            
+            <label for="productImageFile" class="upload-btn" id="uploadLabel">
+              <span id="uploadText">📷 اختر صورة للرفع</span>
+              <span id="uploadLoader" class="hidden">⏳ جاري الرفع...</span>
+            </label>
+            
+            <div id="imagePreviewContainer" class="hidden">
+              <img id="imagePreview" src="" alt="معاينة">
+              <button type="button" id="removeImageBtn" class="remove-img">✖ إزالة</button>
+            </div>
+          </div>
+          <small class="form-hint">ارفع صورة من جهازك (الحد الأقصى 5 ميغابايت)</small>
         </div>
 
         <div class="form-group">
