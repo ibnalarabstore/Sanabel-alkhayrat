@@ -1,13 +1,13 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, onSnapshot, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ==========================================
 // المتغيرات العامة
 // ==========================================
 let currentUser = null;
 let currentUserData = null;
-let storeSettings = { whatsappNumber: "96171447409", currency: "$" }; // افتراضي
+let storeSettings = { whatsappNumber: "96171447409", currency: "$" };
 let allProducts = [];
 let allCategories = [];
 let allOffers = [];
@@ -40,7 +40,6 @@ onAuthStateChanged(auth, async (user) => {
     if (userDoc.exists()) {
       currentUserData = userDoc.data();
       
-      // إذا محظور، نطرده فوراً
       if (currentUserData.isBlocked) {
         await signOut(auth);
         alert("عذراً، حسابك محظور. يرجى التواصل مع الإدارة.");
@@ -48,12 +47,10 @@ onAuthStateChanged(auth, async (user) => {
         return;
       }
 
-      // عرض الاسم
       document.getElementById('userName').textContent = currentUserData.displayName || currentUserData.username;
       document.getElementById('profileName').textContent = currentUserData.displayName || currentUserData.username;
       document.getElementById('profileUsername').textContent = "@" + currentUserData.username;
       
-      // تحميل بيانات المتجر
       loadSettings();
       loadProducts();
       loadCategories();
@@ -123,7 +120,7 @@ function loadOffers() {
   onSnapshot(collection(db, "offers"), (snapshot) => {
     allOffers = [];
     snapshot.forEach(doc => allOffers.push({ id: doc.id, ...doc.data() }));
-    renderProducts(); // نعيد رسم المنتجات عشان تظهر العروض
+    renderProducts();
   });
 }
 
@@ -137,7 +134,6 @@ function loadNotifications() {
     const text = document.getElementById('notificationText');
     
     if (!snapshot.empty) {
-      // نعرض أول إشعار (الأحدث)
       const latest = snapshot.docs[0].data();
       text.textContent = "🔔 " + latest.message;
       banner.classList.remove('hidden');
@@ -150,14 +146,17 @@ document.getElementById('closeNotification').addEventListener('click', () => {
 });
 
 // ==========================================
-// 7. رسم التصنيفات
+// 7. رسم التصنيفات (النسخة المعدلة)
 // ==========================================
 function renderCategories() {
-  // نبقي زر "الكل" ونضيف التصنيفات الجديدة
-  categoryFilter.innerHTML = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">الكل</button>`;
+  // زر "الكل" + التصنيفات من الداتابيز
+  let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">الكل</button>`;
+  
   allCategories.forEach(cat => {
-    categoryFilter.innerHTML += `<button class="cat-btn ${currentCategory === cat.name ? 'active' : ''}" data-cat="${cat.name}">${cat.name}</button>`;
+    html += `<button class="cat-btn ${currentCategory === cat.name ? 'active' : ''}" data-cat="${cat.name}">${cat.name}</button>`;
   });
+  
+  categoryFilter.innerHTML = html;
   
   // إعادة ربط الأحداث
   document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -193,7 +192,6 @@ function renderProducts() {
   }
   
   shopProductsGrid.innerHTML = filtered.map(product => {
-    // حساب سعر الكيلو أو الحبة
     let unitPrice = '';
     if (product.category === 'bag' && product.weightKg) {
       unitPrice = `سعر الكيلو: ${(product.price / product.weightKg).toFixed(2)}${storeSettings.currency}`;
@@ -201,7 +199,6 @@ function renderProducts() {
       unitPrice = `سعر الحبة: ${(product.price / product.unitsPerBox).toFixed(2)}${storeSettings.currency}`;
     }
     
-    // نبحث إذا كان في عرض على هالمنتج
     const offer = allOffers.find(o => o.productId === product.id && o.isActive);
     const offerBadge = offer ? `<div class="offer-badge">🎁 اشترِ ${offer.buyQty} واحصل على ${offer.freeQty} مجاناً!</div>` : '';
     
@@ -249,7 +246,6 @@ window.addToCart = (productId) => {
   saveCart();
   updateCartUI();
   
-  // تنبيه بصري
   cartCount.style.transform = 'scale(1.3)';
   setTimeout(() => cartCount.style.transform = 'scale(1)', 200);
 };
@@ -259,13 +255,11 @@ function saveCart() {
 }
 
 function updateCartUI() {
-  // تحديث عداد السلة
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
   cartCount.textContent = totalItems;
   
-  // تحديث محتوى السلة
   if (cart.length === 0) {
-    cartItemsContainer.innerHTML = `<div class="empty-state"><p>السلة فاضية.</p></div>`;
+    cartItemsContainer.innerHTML = `<div class="empty-cart"><p>السلة فاضية.</p></div>`;
     cartTotalEl.textContent = `0.00${storeSettings.currency}`;
     return;
   }
@@ -341,11 +335,9 @@ checkoutBtn.addEventListener('click', () => {
   message += `💰 *الإجمالي:* ${total.toFixed(2)}${storeSettings.currency}\n\n`;
   message += `📅 التاريخ: ${new Date().toLocaleDateString('ar-EG')}`;
   
-  // فتح واتساب
   const encodedMessage = encodeURIComponent(message);
   window.open(`https://wa.me/${storeSettings.whatsappNumber}?text=${encodedMessage}`, '_blank');
   
-  // تفريغ السلة
   if (confirm("هل تم إرسال الطلب بنجاح؟ سيتم تفريغ السلة الآن.")) {
     cart = [];
     saveCart();
