@@ -102,7 +102,9 @@
 }
 .search-box input:focus { border-color: var(--gold); outline: none; }
 
-#addProductBtn, #addCustomerBtn { width: auto; padding: 14px 28px; font-size: 1rem; border-radius: 12px; }
+#addProductBtn, #addCustomerBtn, #addCategoryBtn, #addOfferBtn, #addNotificationBtn { 
+  width: auto; padding: 14px 28px; font-size: 1rem; border-radius: 12px; 
+}
 
 .products-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px;
@@ -171,28 +173,65 @@
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 15px; padding-top: 20px; border-top: 1px solid #eee; }
 
-/* ===== 4. رفع الصور ===== */
-.image-upload-wrapper { display: flex; flex-direction: column; gap: 15px; }
+/* ===== رفع الصور ===== */
+.image-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 .upload-btn {
-  display: flex; justify-content: center; align-items: center; padding: 15px;
-  background: var(--offwhite); border: 2px dashed var(--gold); border-radius: var(--radius-sm);
-  color: var(--gold-dark); font-weight: 700; cursor: pointer; transition: 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  background: var(--offwhite);
+  border: 2px dashed var(--gold);
+  border-radius: var(--radius-sm);
+  color: var(--gold-dark);
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
 }
-.upload-btn:hover { background: rgba(212, 175, 55, 0.1); }
+
+.upload-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
 #imagePreviewContainer {
-  position: relative; width: 100%; max-width: 250px;
-  border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border);
+  position: relative;
+  width: 100%;
+  max-width: 250px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
-#imagePreview { width: 100%; height: auto; display: block; }
+
+#imagePreview {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .remove-img {
-  position: absolute; top: 5px; left: 5px;
-  background: rgba(231, 76, 60, 0.9); color: white; border: none;
-  border-radius: 50%; width: 30px; height: 30px; cursor: pointer;
-  font-weight: bold; display: flex; justify-content: center; align-items: center;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .remove-img:hover { background: var(--error); }
 
-/* ===== 5. التجاوب مع الموبايل ===== */
+/* ===== 4. التجاوب مع الموبايل ===== */
 @media (max-width: 850px) {
   .sidebar {
     display: flex; flex-direction: row; width: 100%; height: 70px;
@@ -225,6 +264,6 @@
   
   .section-toolbar { flex-direction: column; gap: 15px; }
   .search-box input { width: 100%; }
-  #addProductBtn, #addCustomerBtn { width: 100%; }
+  #addProductBtn, #addCustomerBtn, #addCategoryBtn, #addOfferBtn, #addNotificationBtn { width: 100%; }
   .form-row { grid-template-columns: 1fr; }
 }
