@@ -1,6 +1,18 @@
 import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// إعدادات فايربيز (نفس اللي بملف firebase-config عشان نستخدمها بالتطبيق الوهمي)
+const firebaseConfig = {
+  apiKey: "AIzaSyA3uFqdysDGvU-XQlZwfkL9feM2qJNpgEw",
+  authDomain: "sanabel-5e166.firebaseapp.com",
+  projectId: "sanabel-5e166",
+  storageBucket: "sanabel-5e166.firebasestorage.app",
+  messagingSenderId: "237316094094",
+  appId: "1:237316094094:web:f9b34d86f2a3de6161f1df",
+  measurementId: "G-DNT40RRSXC"
+};
 
 // ==========================================
 // 1. حماية الصفحة وجلب بيانات الأدمن
@@ -58,7 +70,7 @@ navLinks.forEach(link => {
 });
 
 // ==========================================
-// 3. إدارة المنتجات (نافذة، حفظ، عرض)
+// 3. إدارة المنتجات
 // ==========================================
 const productModal = document.getElementById('productModal');
 const addProductBtn = document.getElementById('addProductBtn');
@@ -76,7 +88,6 @@ function openModal() {
   document.getElementById('productId').value = '';
   document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
   
-  // إعادة تعيين حقل الصورة
   productImageField.value = '';
   imageFileInput.value = '';
   imagePreviewContainer.classList.add('hidden');
@@ -118,7 +129,6 @@ productForm.addEventListener('submit', async (e) => {
   const imageUrl = document.getElementById('productImage').value.trim();
   const description = document.getElementById('productDescription').value.trim();
 
-  // التحقق من وجود صورة
   if (!imageUrl) {
     alert("الرجاء رفع صورة للمنتج أولاً");
     return;
@@ -218,7 +228,6 @@ window.editProduct = (id) => {
   document.getElementById('productDescription').value = product.description || '';
   productCategory.value = product.category;
   
-  // إظهار الصورة الحالية
   productImageField.value = product.imageUrl;
   imagePreview.src = product.imageUrl;
   imagePreviewContainer.classList.remove('hidden');
@@ -249,7 +258,7 @@ document.getElementById('searchProducts').addEventListener('input', (e) => {
 });
 
 // ==========================================
-// 4. إدارة الزبائن
+// 4. إدارة الزبائن (النسخة الجديدة - إنشاء حساب كامل)
 // ==========================================
 const customerModal = document.getElementById('customerModal');
 const addCustomerBtn = document.getElementById('addCustomerBtn');
@@ -266,6 +275,7 @@ addCustomerBtn.addEventListener('click', () => {
 closeCustomerModal.addEventListener('click', () => customerModal.classList.add('hidden'));
 cancelCustBtn.addEventListener('click', () => customerModal.classList.add('hidden'));
 
+// حفظ الزبون في Firestore + إنشاء الحساب في Auth (بدون ما نطرد الأدمن)
 customerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const saveBtn = document.getElementById('saveCustBtn');
@@ -275,27 +285,53 @@ customerForm.addEventListener('submit', async (e) => {
   const username = document.getElementById('custUsername').value.trim().toLowerCase();
   const displayName = document.getElementById('custDisplayName').value.trim();
   const phone = document.getElementById('custPhone').value.trim();
+  const password = document.getElementById('custPassword').value; // جلب الباسورد
   
   btnText.classList.add('hidden');
   btnLoader.classList.remove('hidden');
   saveBtn.disabled = true;
   
+  // 1. إنشاء تطبيق فايربيز "وهمي" مؤقت
+  const secondaryAppName = "secondaryApp_" + Date.now();
+  const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
+  const { getAuth: getSecondaryAuth } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+  const secondaryAuth = getSecondaryAuth(secondaryApp);
+  
   try {
-    await setDoc(doc(db, "users", username), {
+    const email = `${username}@sanabel.local`;
+    
+    // 2. إنشاء الحساب في التطبيق الوهمي
+    const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+    const newUid = userCredential.user.uid;
+
+    // 3. حفظ بيانات الزبون في الداتابيز باستخدام الـ UID الحقيقي
+    await setDoc(doc(db, "users", newUid), {
       username, displayName, phone,
       role: 'customer', isBlocked: false, createdAt: serverTimestamp()
     });
-    alert("تم حفظ بيانات الزبون!\n\n⚠️ تنبيه: يجب الذهاب إلى Firebase Console -> Authentication وإنشاء حساب له بالإيميل:\n" + username + "@sanabel.local\nلتتمكن من تسجيل الدخول.");
+
+    alert(`تم إنشاء حساب الزبون بنجاح ✅\n\nاسم المستخدم: ${username}\nكلمة المرور: ${password}\n\nيمكنه الدخول الآن مباشرة.`);
     customerModal.classList.add('hidden');
   } catch (error) {
-    alert("خطأ: " + error.message);
+    if (error.code === 'auth/email-already-in-use') {
+      alert("خطأ: اسم المستخدم هذا محجوز، يرجى اختيار اسم آخر.");
+    } else if (error.code === 'auth/weak-password') {
+      alert("خطأ: كلمة المرور ضعيفة (يجب أن تكون 6 أحرف على الأقل).");
+    } else {
+      alert("حدث خطأ أثناء إنشاء الحساب: " + error.message);
+    }
   } finally {
+    // 4. مسح التطبيق الوهمي وتسجيل خروجه
+    await secondaryAuth.signOut();
+    await deleteApp(secondaryApp);
+    
     btnText.classList.remove('hidden');
     btnLoader.classList.add('hidden');
     saveBtn.disabled = false;
   }
 });
 
+// عرض الزبائن
 const qCustomers = query(collection(db, "users"), orderBy("createdAt", "desc"));
 onSnapshot(qCustomers, (snapshot) => {
   allCustomers = [];
