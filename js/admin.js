@@ -58,7 +58,64 @@ navLinks.forEach(link => {
 });
 
 // ==========================================
-// 3. إدارة المنتجات (نافذة، حفظ، عرض)
+// 3. إعدادات الصور (ImgBB)
+// ==========================================
+const IMGBB_API_KEY = "99bf37915afe5bdef0be905ae32d82fd"; // ⚠️ غيّره لاحقاً
+const imageFileInput = document.getElementById('productImageFile');
+const productImageField = document.getElementById('productImage');
+const uploadText = document.getElementById('uploadText');
+const uploadLoader = document.getElementById('uploadLoader');
+const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+const imagePreview = document.getElementById('imagePreview');
+const removeImageBtn = document.getElementById('removeImageBtn');
+
+async function uploadImageToImgBB(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST', body: formData
+  });
+  const data = await response.json();
+  if (data.success) return data.data.url;
+  throw new Error('فشل رفع الصورة');
+}
+
+imageFileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert('حجم الصورة كبير جداً. الحد الأقصى 5 ميغابايت.');
+    imageFileInput.value = ''; return;
+  }
+
+  uploadText.classList.add('hidden');
+  uploadLoader.classList.remove('hidden');
+
+  try {
+    const imageUrl = await uploadImageToImgBB(file);
+    productImageField.value = imageUrl;
+    imagePreview.src = imageUrl;
+    imagePreviewContainer.classList.remove('hidden');
+    uploadText.textContent = '🔄 تغيير الصورة';
+  } catch (error) {
+    alert('حدث خطأ أثناء رفع الصورة: ' + error.message);
+    imageFileInput.value = '';
+  } finally {
+    uploadText.classList.remove('hidden');
+    uploadLoader.classList.add('hidden');
+  }
+});
+
+removeImageBtn.addEventListener('click', () => {
+  productImageField.value = '';
+  imageFileInput.value = '';
+  imagePreviewContainer.classList.add('hidden');
+  imagePreview.src = '';
+  uploadText.textContent = '📷 اختر صورة للرفع';
+});
+
+// ==========================================
+// 4. إدارة المنتجات
 // ==========================================
 const productModal = document.getElementById('productModal');
 const addProductBtn = document.getElementById('addProductBtn');
@@ -75,6 +132,13 @@ function openModal() {
   productForm.reset();
   document.getElementById('productId').value = '';
   document.getElementById('modalTitle').textContent = 'إضافة منتج جديد';
+  
+  productImageField.value = '';
+  imageFileInput.value = '';
+  imagePreviewContainer.classList.add('hidden');
+  imagePreview.src = '';
+  uploadText.textContent = '📷 اختر صورة للرفع';
+  
   toggleCategoryFields();
   productModal.classList.remove('hidden');
 }
@@ -99,7 +163,6 @@ function toggleCategoryFields() {
 }
 productCategory.addEventListener('change', toggleCategoryFields);
 
-// حفظ المنتج
 productForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const productId = document.getElementById('productId').value;
@@ -108,11 +171,10 @@ productForm.addEventListener('submit', async (e) => {
   const price = parseFloat(document.getElementById('productPrice').value);
   const imageUrl = document.getElementById('productImage').value.trim();
   const description = document.getElementById('productDescription').value.trim();
+
+  if (!imageUrl) { alert("الرجاء رفع صورة للمنتج أولاً"); return; }
   
-  const productData = {
-    name, category, price, imageUrl, description,
-    isActive: true, updatedAt: serverTimestamp()
-  };
+  const productData = { name, category, price, imageUrl, description, isActive: true, updatedAt: serverTimestamp() };
   
   if (category === 'bag') {
     productData.weightKg = parseFloat(document.getElementById('productWeight').value);
@@ -149,14 +211,11 @@ productForm.addEventListener('submit', async (e) => {
   }
 });
 
-// عرض المنتجات
 const qProducts = query(collection(db, "products"), orderBy("createdAt", "desc"));
 onSnapshot(qProducts, (snapshot) => {
   allProducts = [];
   snapshot.forEach((doc) => allProducts.push({ id: doc.id, ...doc.data() }));
   renderProducts(allProducts);
-}, (error) => {
-  productsGrid.innerHTML = `<div class="empty-state"><p>حدث خطأ في جلب المنتجات</p></div>`;
 });
 
 function renderProducts(products) {
@@ -192,16 +251,20 @@ function renderProducts(products) {
   }).join('');
 }
 
-// تعديل وحذف المنتج
 window.editProduct = (id) => {
   const product = allProducts.find(p => p.id === id);
   if (!product) return;
+  
   document.getElementById('productId').value = product.id;
   document.getElementById('productName').value = product.name;
   document.getElementById('productPrice').value = product.price;
-  document.getElementById('productImage').value = product.imageUrl;
   document.getElementById('productDescription').value = product.description || '';
   productCategory.value = product.category;
+  
+  productImageField.value = product.imageUrl;
+  imagePreview.src = product.imageUrl;
+  imagePreviewContainer.classList.remove('hidden');
+  uploadText.textContent = '🔄 تغيير الصورة';
   
   if (product.category === 'bag') {
     document.getElementById('productWeight').value = product.weightKg || '';
@@ -221,14 +284,13 @@ window.deleteProduct = async (id) => {
   }
 };
 
-// البحث في المنتجات
 document.getElementById('searchProducts').addEventListener('input', (e) => {
   const term = e.target.value.trim().toLowerCase();
   renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
 });
 
 // ==========================================
-// 4. إدارة الزبائن
+// 5. إدارة الزبائن
 // ==========================================
 const customerModal = document.getElementById('customerModal');
 const addCustomerBtn = document.getElementById('addCustomerBtn');
@@ -247,84 +309,4 @@ cancelCustBtn.addEventListener('click', () => customerModal.classList.add('hidde
 
 customerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const saveBtn = document.getElementById('saveCustBtn');
-  const btnText = saveBtn.querySelector('.btn-text');
-  const btnLoader = saveBtn.querySelector('.btn-loader');
-  
-  const username = document.getElementById('custUsername').value.trim().toLowerCase();
-  const displayName = document.getElementById('custDisplayName').value.trim();
-  const phone = document.getElementById('custPhone').value.trim();
-  
-  btnText.classList.add('hidden');
-  btnLoader.classList.remove('hidden');
-  saveBtn.disabled = true;
-  
-  try {
-    await setDoc(doc(db, "users", username), {
-      username, displayName, phone,
-      role: 'customer', isBlocked: false, createdAt: serverTimestamp()
-    });
-    alert("تم حفظ بيانات الزبون!\n\n⚠️ تنبيه: يجب الذهاب إلى Firebase Console -> Authentication وإنشاء حساب له بالإيميل:\n" + username + "@sanabel.local\nلتتمكن من تسجيل الدخول.");
-    customerModal.classList.add('hidden');
-  } catch (error) {
-    alert("خطأ: " + error.message);
-  } finally {
-    btnText.classList.remove('hidden');
-    btnLoader.classList.add('hidden');
-    saveBtn.disabled = false;
-  }
-});
-
-const qCustomers = query(collection(db, "users"), orderBy("createdAt", "desc"));
-onSnapshot(qCustomers, (snapshot) => {
-  allCustomers = [];
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    if (data.role !== 'admin') allCustomers.push({ id: docSnap.id, ...data });
-  });
-  renderCustomers(allCustomers);
-});
-
-function renderCustomers(customers) {
-  if (customers.length === 0) {
-    customersGrid.innerHTML = `<div class="empty-state"><p>لا يوجد زبائن بعد.</p></div>`;
-    return;
-  }
-
-  customersGrid.innerHTML = customers.map(cust => {
-    const statusClass = cust.isBlocked ? 'blocked' : 'active';
-    const statusText = cust.isBlocked ? '🔴 محظور' : '🟢 نشط';
-    return `
-      <div class="product-card">
-        <div class="product-info">
-          <span class="product-badge ${statusClass}">${statusText}</span>
-          <h3 class="product-title">${cust.displayName || cust.username}</h3>
-          <p style="font-size:0.9rem; color:#555;">👤 ${cust.username}</p>
-          <p style="font-size:0.9rem; color:#555; margin-bottom:15px;">📞 ${cust.phone}</p>
-          <div class="product-actions">
-            <button class="btn-edit" onclick="toggleBlockCustomer('${cust.id}', ${cust.isBlocked})">
-              ${cust.isBlocked ? 'فك الحظر' : 'حظر'}
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-window.toggleBlockCustomer = async (id, currentStatus) => {
-  const action = currentStatus ? 'فك الحظر عن' : 'حظر';
-  if (!confirm(`هل أنت متأكد من ${action} هذا الزبون؟`)) return;
-  try { await updateDoc(doc(db, "users", id), { isBlocked: !currentStatus }); } 
-  catch (error) { alert("خطأ: " + error.message); }
-};
-
-// البحث في الزبائن
-document.getElementById('searchCustomers').addEventListener('input', (e) => {
-  const term = e.target.value.trim().toLowerCase();
-  const filtered = allCustomers.filter(c => 
-    (c.displayName && c.displayName.toLowerCase().includes(term)) || 
-    (c.username && c.username.toLowerCase().includes(term))
-  );
-  renderCustomers(filtered);
-});
+  const saveBtn =
