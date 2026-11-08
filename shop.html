@@ -22,6 +22,12 @@
     </div>
     
     <div class="header-actions">
+      <!-- جرس الإشعارات -->
+      <button class="notif-btn" id="notifBtn">
+        🔔
+        <span class="notif-count hidden" id="notifCount">0</span>
+      </button>
+
       <button class="profile-btn" id="profileBtn">
         <span class="user-icon">👤</span>
         <span id="userName" class="user-name">...</span>
@@ -33,12 +39,6 @@
       </button>
     </div>
   </header>
-
-  <!-- ===== شريط الإشعارات ===== -->
-  <div id="notificationBanner" class="notification-banner hidden">
-    <span id="notificationText"></span>
-    <button id="closeNotification">✖</button>
-  </div>
 
   <!-- ===== المحتوى الرئيسي ===== -->
   <main class="shop-main">
@@ -96,6 +96,39 @@
       <button class="logout-shop-btn" id="logoutShopBtn">
         🚪 تسجيل خروج
       </button>
+    </div>
+  </div>
+
+  <!-- ===== نافذة الإشعارات ===== -->
+  <div class="modal-overlay hidden" id="notificationsModal">
+    <div class="modal-content" style="max-width: 450px; background: white; border-radius: 16px; overflow: hidden;">
+      <div class="modal-header" style="background: #fafafa; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+        <h2 style="margin: 0; font-size: 1.2rem;">🔔 الإشعارات</h2>
+        <button class="close-btn" id="closeNotifModal" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
+      </div>
+      <div class="modal-body" id="notificationsList" style="max-height: 60vh; overflow-y: auto; padding: 15px;">
+        <!-- الإشعارات رح تتحمل هون -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة اختيار العرض ===== -->
+  <div class="modal-overlay hidden" id="offerChoiceModal">
+    <div class="modal-content" style="max-width: 400px; background: white; border-radius: 16px; overflow: hidden;">
+      <div class="modal-header" style="background: #fafafa; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+        <h2 style="margin: 0; font-size: 1.2rem;">🎁 عرض خاص</h2>
+        <button class="close-btn" id="closeOfferModal" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; text-align: center;">
+        <div id="offerDetails" style="margin-bottom: 20px;"></div>
+        
+        <button class="btn btn-outline" id="chooseSingleBtn" style="width:100%; margin-bottom:10px; padding: 12px; border-radius: 10px; border: 2px solid #ddd; background: white; font-weight: 700; cursor: pointer;">
+          🛒 إضافة منتج واحد فقط
+        </button>
+        <button class="btn btn-primary" id="chooseFullOfferBtn" style="width:100%; padding: 12px; border-radius: 10px; border: none; background: #d4af37; color: black; font-weight: 700; cursor: pointer;">
+          🎁 إضافة العرض كامل
+        </button>
+      </div>
     </div>
   </div>
 
