@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ==========================================
 // المتغيرات العامة
@@ -11,28 +11,22 @@ let storeSettings = { whatsappNumber: "96171447409", currency: "$" };
 let allProducts = [];
 let allCategories = [];
 let allOffers = [];
+let allNotifications = [];
+let readNotifications = [];
 let currentCategory = "all";
 let cart = JSON.parse(localStorage.getItem('sanabelCart')) || [];
 
-// عناصر الصفحة
+let pendingOffer = null;
+let pendingProductId = null;
+
 const shopProductsGrid = document.getElementById('shopProductsGrid');
 const categoryFilter = document.getElementById('categoryFilter');
-const cartBtn = document.getElementById('cartBtn');
-const cartCount = document.getElementById('cartCount');
-const cartOverlay = document.getElementById('cartOverlay');
-const closeCartBtn = document.getElementById('closeCartBtn');
-const cartItemsContainer = document.getElementById('cartItems');
-const cartTotalEl = document.getElementById('cartTotal');
-const checkoutBtn = document.getElementById('checkoutBtn');
 
 // ==========================================
 // 1. حماية الصفحة وجلب بيانات الزبون
 // ==========================================
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = 'index.html';
-    return;
-  }
+  if (!user) { window.location.href = 'index.html'; return; }
   currentUser = user;
   
   try {
@@ -42,7 +36,7 @@ onAuthStateChanged(auth, async (user) => {
       
       if (currentUserData.isBlocked) {
         await signOut(auth);
-        alert("عذراً، حسابك محظور. يرجى التواصل مع الإدارة.");
+        alert("حسابك محظور.");
         window.location.href = 'index.html';
         return;
       }
@@ -51,29 +45,32 @@ onAuthStateChanged(auth, async (user) => {
       document.getElementById('profileName').textContent = currentUserData.displayName || currentUserData.username;
       document.getElementById('profileUsername').textContent = "@" + currentUserData.username;
       
+      const readDoc = await getDoc(doc(db, "notificationReads", user.uid));
+      if (readDoc.exists()) readNotifications = readDoc.data().readIds || [];
+      
       loadSettings();
       loadProducts();
       loadCategories();
       loadOffers();
       loadNotifications();
       updateCartUI();
+      updateNotifCount();
     } else {
       window.location.href = 'index.html';
     }
   } catch (error) {
-    console.error("خطأ:", error);
+    console.error(error);
     window.location.href = 'index.html';
   }
 });
 
-// تسجيل الخروج
 document.getElementById('logoutShopBtn').addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = 'index.html';
 });
 
 // ==========================================
-// 2. جلب الإعدادات
+// 2. الإعدادات
 // ==========================================
 async function loadSettings() {
   try {
@@ -85,13 +82,11 @@ async function loadSettings() {
         currency: data.currency || "$"
       };
     }
-  } catch (error) {
-    console.error("خطأ في جلب الإعدادات:", error);
-  }
+  } catch (error) { console.error(error); }
 }
 
 // ==========================================
-// 3. جلب المنتجات
+// 3. المنتجات والتصنيفات والعروض
 // ==========================================
 function loadProducts() {
   const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -102,9 +97,6 @@ function loadProducts() {
   });
 }
 
-// ==========================================
-// 4. جلب التصنيفات
-// ==========================================
 function loadCategories() {
   onSnapshot(collection(db, "categories"), (snapshot) => {
     allCategories = [];
@@ -113,9 +105,6 @@ function loadCategories() {
   });
 }
 
-// ==========================================
-// 5. جلب العروض
-// ==========================================
 function loadOffers() {
   onSnapshot(collection(db, "offers"), (snapshot) => {
     allOffers = [];
@@ -125,40 +114,93 @@ function loadOffers() {
 }
 
 // ==========================================
-// 6. جلب الإشعارات
+// 4. الإشعارات
 // ==========================================
 function loadNotifications() {
   const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
   onSnapshot(q, (snapshot) => {
-    const banner = document.getElementById('notificationBanner');
-    const text = document.getElementById('notificationText');
-    
-    if (!snapshot.empty) {
-      const latest = snapshot.docs[0].data();
-      text.textContent = "🔔 " + latest.message;
-      banner.classList.remove('hidden');
-    }
+    allNotifications = [];
+    snapshot.forEach(doc => allNotifications.push({ id: doc.id, ...doc.data() }));
+    renderNotifications();
+    updateNotifCount();
   });
 }
 
-document.getElementById('closeNotification').addEventListener('click', () => {
-  document.getElementById('notificationBanner').classList.add('hidden');
+function updateNotifCount() {
+  const countEl = document.getElementById('notifCount');
+  const unreadCount = allNotifications.filter(n => !readNotifications.includes(n.id)).length;
+  
+  if (unreadCount > 0) {
+    countEl.textContent = unreadCount;
+    countEl.classList.remove('hidden');
+  } else {
+    countEl.classList.add('hidden');
+  }
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notificationsList');
+  
+  if (allNotifications.length === 0) {
+    list.innerHTML = `<div class="empty-notif">لا توجد إشعارات.</div>`;
+    return;
+  }
+  
+  list.innerHTML = allNotifications.map(notif => {
+    const isUnread = !readNotifications.includes(notif.id);
+    return `
+      <div class="notif-item ${isUnread ? 'unread' : ''}">
+        <p>${notif.message}</p>
+        <button class="notif-delete-btn" onclick="deleteNotif('${notif.id}')">🗑️</button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.deleteNotif = async (id) => {
+  if (!confirm('حذف هذا الإشعار؟')) return;
+  try {
+    await setDoc(doc(db, "notificationReads", currentUser.uid), {
+      readIds: arrayUnion(id),
+      deletedIds: arrayUnion(id)
+    }, { merge: true });
+    
+    allNotifications = allNotifications.filter(n => n.id !== id);
+    renderNotifications();
+    updateNotifCount();
+  } catch (error) { alert("خطأ: " + error.message); }
+};
+
+document.getElementById('notifBtn').addEventListener('click', async () => {
+  document.getElementById('notificationsModal').classList.remove('hidden');
+  
+  const allIds = allNotifications.map(n => n.id);
+  if (allIds.length > 0) {
+    try {
+      await setDoc(doc(db, "notificationReads", currentUser.uid), {
+        readIds: arrayUnion(...allIds)
+      }, { merge: true });
+      
+      readNotifications = [...new Set([...readNotifications, ...allIds])];
+      renderNotifications();
+      updateNotifCount();
+    } catch (error) { console.error(error); }
+  }
+});
+document.getElementById('closeNotifModal').addEventListener('click', () => {
+  document.getElementById('notificationsModal').classList.add('hidden');
 });
 
 // ==========================================
-// 7. رسم التصنيفات (النسخة المعدلة)
+// 5. التصنيفات
 // ==========================================
 function renderCategories() {
-  // زر "الكل" + التصنيفات من الداتابيز
   let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">الكل</button>`;
-  
   allCategories.forEach(cat => {
     html += `<button class="cat-btn ${currentCategory === cat.name ? 'active' : ''}" data-cat="${cat.name}">${cat.name}</button>`;
   });
-  
   categoryFilter.innerHTML = html;
   
-  // إعادة ربط الأحداث
   document.querySelectorAll('.cat-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       currentCategory = btn.getAttribute('data-cat');
@@ -170,24 +212,19 @@ function renderCategories() {
 }
 
 // ==========================================
-// 8. رسم المنتجات
+// 6. المنتجات
 // ==========================================
 function renderProducts() {
   let filtered = allProducts;
-  
-  // فلترة حسب التصنيف
   if (currentCategory !== 'all') {
     filtered = filtered.filter(p => p.category === currentCategory || p.name.includes(currentCategory));
   }
   
-  // فلترة حسب البحث
   const searchTerm = document.getElementById('searchShop').value.trim().toLowerCase();
-  if (searchTerm) {
-    filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm));
-  }
+  if (searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm));
   
   if (filtered.length === 0) {
-    shopProductsGrid.innerHTML = `<div class="empty-state"><p>لا توجد منتجات مطابقة.</p></div>`;
+    shopProductsGrid.innerHTML = `<div class="empty-state"><p>لا توجد منتجات.</p></div>`;
     return;
   }
   
@@ -212,24 +249,84 @@ function renderProducts() {
             <strong>${product.price}${storeSettings.currency}</strong>
             <small>${unitPrice}</small>
           </div>
-          <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">➕ أضف للسلة</button>
+          <button class="add-to-cart-btn" onclick="handleAddToCart('${product.id}')">➕ أضف للسلة</button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-// البحث
 document.getElementById('searchShop').addEventListener('input', renderProducts);
 
 // ==========================================
-// 9. السلة
+// 7. السلة والعروض
 // ==========================================
-window.addToCart = (productId) => {
+window.handleAddToCart = (productId) => {
   const product = allProducts.find(p => p.id === productId);
   if (!product) return;
   
-  const existing = cart.find(item => item.productId === productId);
+  const offer = allOffers.find(o => o.productId === productId && o.isActive);
+  
+  if (offer) {
+    pendingProductId = productId;
+    pendingOffer = offer;
+    
+    document.getElementById('offerDetails').innerHTML = `
+      <h3 style="color: #111;">${product.name}</h3>
+      <p style="margin-top: 10px; font-size: 1.1rem;">
+        🎁 <strong>عرض خاص:</strong><br>
+        اشترِ <strong>${offer.buyQty}</strong> واحصل على <strong>${offer.freeQty}</strong> مجاناً
+      </p>
+      <p style="margin-top: 10px; color: #aa8c2c; font-weight: 800;">
+        السعر الإجمالي: ${(product.price * offer.buyQty).toFixed(2)}${storeSettings.currency}
+      </p>
+    `;
+    document.getElementById('offerChoiceModal').classList.remove('hidden');
+  } else {
+    addToCartDirect(product);
+  }
+};
+
+document.getElementById('chooseSingleBtn').addEventListener('click', () => {
+  const product = allProducts.find(p => p.id === pendingProductId);
+  if (product) addToCartDirect(product);
+  document.getElementById('offerChoiceModal').classList.add('hidden');
+});
+
+document.getElementById('chooseFullOfferBtn').addEventListener('click', () => {
+  const product = allProducts.find(p => p.id === pendingProductId);
+  if (!product || !pendingOffer) return;
+  
+  const totalQty = pendingOffer.buyQty + pendingOffer.freeQty;
+  const existing = cart.find(item => item.productId === pendingProductId && item.isOffer);
+  
+  if (existing) {
+    existing.qty += totalQty;
+  } else {
+    cart.push({
+      productId: product.id,
+      name: `${product.name} (عرض: ${pendingOffer.buyQty}+${pendingOffer.freeQty} مجاناً)`,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      category: product.category,
+      qty: totalQty,
+      isOffer: true,
+      payQty: pendingOffer.buyQty,
+      freeQty: pendingOffer.freeQty
+    });
+  }
+  
+  saveCart();
+  updateCartUI();
+  document.getElementById('offerChoiceModal').classList.add('hidden');
+});
+
+document.getElementById('closeOfferModal').addEventListener('click', () => {
+  document.getElementById('offerChoiceModal').classList.add('hidden');
+});
+
+function addToCartDirect(product) {
+  const existing = cart.find(item => item.productId === product.id && !item.isOffer);
   if (existing) {
     existing.qty += 1;
   } else {
@@ -242,13 +339,13 @@ window.addToCart = (productId) => {
       qty: 1
     });
   }
-  
   saveCart();
   updateCartUI();
   
+  const cartCount = document.getElementById('cartCount');
   cartCount.style.transform = 'scale(1.3)';
   setTimeout(() => cartCount.style.transform = 'scale(1)', 200);
-};
+}
 
 function saveCart() {
   localStorage.setItem('sanabelCart', JSON.stringify(cart));
@@ -256,7 +353,10 @@ function saveCart() {
 
 function updateCartUI() {
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-  cartCount.textContent = totalItems;
+  document.getElementById('cartCount').textContent = totalItems;
+  
+  const cartItemsContainer = document.getElementById('cartItems');
+  const cartTotalEl = document.getElementById('cartTotal');
   
   if (cart.length === 0) {
     cartItemsContainer.innerHTML = `<div class="empty-cart"><p>السلة فاضية.</p></div>`;
@@ -264,56 +364,68 @@ function updateCartUI() {
     return;
   }
   
-  cartItemsContainer.innerHTML = cart.map(item => `
-    <div class="cart-item">
-      <img src="${item.imageUrl}" class="cart-item-img" onerror="this.src='https://via.placeholder.com/60'">
-      <div class="cart-item-info">
-        <h4>${item.name}</h4>
-        <p>${item.price}${storeSettings.currency} للواحدة</p>
-        <div class="cart-qty-controls">
-          <button class="qty-btn" onclick="changeQty('${item.productId}', -1)">−</button>
-          <span>${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${item.productId}', 1)">+</button>
+  cartItemsContainer.innerHTML = cart.map(item => {
+    let displayPrice = item.isOffer 
+      ? `${item.price}${storeSettings.currency} × ${item.payQty} (مدفوع) + ${item.freeQty} مجاناً`
+      : `${item.price}${storeSettings.currency} للواحدة`;
+    
+    return `
+      <div class="cart-item">
+        <img src="${item.imageUrl}" class="cart-item-img" onerror="this.src='https://via.placeholder.com/60'">
+        <div class="cart-item-info">
+          <h4>${item.name}</h4>
+          <p>${displayPrice}</p>
+          <div class="cart-qty-controls">
+            <button class="qty-btn" onclick="changeQty('${item.productId}', ${item.isOffer ? 'true' : 'false'}, -1)">−</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.productId}', ${item.isOffer ? 'true' : 'false'}, 1)">+</button>
+          </div>
         </div>
+        <button class="cart-remove-btn" onclick="removeFromCart('${item.productId}', ${item.isOffer ? 'true' : 'false'})">🗑️</button>
       </div>
-      <button class="cart-remove-btn" onclick="removeFromCart('${item.productId}')">🗑️</button>
-    </div>
-  `).join('');
+    `;
+  }).join('');
   
-  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const total = cart.reduce((sum, item) => {
+    if (item.isOffer) return sum + (item.price * item.payQty * (item.qty / (item.payQty + item.freeQty)));
+    return sum + (item.price * item.qty);
+  }, 0);
+  
   cartTotalEl.textContent = `${total.toFixed(2)}${storeSettings.currency}`;
 }
 
-window.changeQty = (productId, delta) => {
-  const item = cart.find(i => i.productId === productId);
+window.changeQty = (productId, isOffer, delta) => {
+  const item = cart.find(i => i.productId === productId && !!i.isOffer === isOffer);
   if (!item) return;
   item.qty += delta;
   if (item.qty <= 0) {
-    cart = cart.filter(i => i.productId !== productId);
+    cart = cart.filter(i => !(i.productId === productId && !!i.isOffer === isOffer));
   }
   saveCart();
   updateCartUI();
 };
 
-window.removeFromCart = (productId) => {
-  cart = cart.filter(i => i.productId !== productId);
+window.removeFromCart = (productId, isOffer) => {
+  cart = cart.filter(i => !(i.productId === productId && !!i.isOffer === isOffer));
   saveCart();
   updateCartUI();
 };
 
-// فتح وإغلاق السلة
-cartBtn.addEventListener('click', () => cartOverlay.classList.remove('hidden'));
-closeCartBtn.addEventListener('click', () => cartOverlay.classList.add('hidden'));
-cartOverlay.addEventListener('click', (e) => { if (e.target === cartOverlay) cartOverlay.classList.add('hidden'); });
+document.getElementById('cartBtn').addEventListener('click', () => {
+  document.getElementById('cartOverlay').classList.remove('hidden');
+});
+document.getElementById('closeCartBtn').addEventListener('click', () => {
+  document.getElementById('cartOverlay').classList.add('hidden');
+});
+document.getElementById('cartOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'cartOverlay') document.getElementById('cartOverlay').classList.add('hidden');
+});
 
 // ==========================================
-// 10. إتمام الطلب عبر واتساب
+// 8. إتمام الطلب
 // ==========================================
-checkoutBtn.addEventListener('click', () => {
-  if (cart.length === 0) {
-    alert("السلة فاضية! أضف منتجات أولاً.");
-    return;
-  }
+document.getElementById('checkoutBtn').addEventListener('click', () => {
+  if (cart.length === 0) { alert("السلة فاضية!"); return; }
   
   const customerName = currentUserData.displayName || currentUserData.username;
   const customerPhone = currentUserData.phone || "غير محدد";
@@ -321,33 +433,39 @@ checkoutBtn.addEventListener('click', () => {
   let message = `🌾 *طلب جديد من سنابل الخيرات* 🌾\n\n`;
   message += `👤 *الزبون:* ${customerName}\n`;
   message += `📞 *الهاتف:* ${customerPhone}\n`;
-  message += `━━━━━━━━━━━━━━━━━━\n\n`;
-  message += `📦 *المنتجات المطلوبة:*\n\n`;
+  message += `━━━━━━━━━━━━━━━━━━\n\n📦 *المنتجات:*\n\n`;
   
+  let total = 0;
   cart.forEach((item, index) => {
-    const lineTotal = (item.price * item.qty).toFixed(2);
-    message += `${index + 1}. ${item.name}\n`;
-    message += `   الكمية: ${item.qty} × ${item.price}${storeSettings.currency} = ${lineTotal}${storeSettings.currency}\n\n`;
+    if (item.isOffer) {
+      const paid = item.price * item.payQty * (item.qty / (item.payQty + item.freeQty));
+      message += `${index + 1}. ${item.name}\n`;
+      message += `   الكمية: ${item.qty} (${item.payQty} مدفوع + ${item.freeQty} مجاني)\n`;
+      message += `   السعر: ${paid.toFixed(2)}${storeSettings.currency}\n\n`;
+      total += paid;
+    } else {
+      const lineTotal = item.price * item.qty;
+      message += `${index + 1}. ${item.name}\n`;
+      message += `   الكمية: ${item.qty} × ${item.price}${storeSettings.currency} = ${lineTotal.toFixed(2)}${storeSettings.currency}\n\n`;
+      total += lineTotal;
+    }
   });
   
-  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  message += `━━━━━━━━━━━━━━━━━━\n`;
-  message += `💰 *الإجمالي:* ${total.toFixed(2)}${storeSettings.currency}\n\n`;
+  message += `━━━━━━━━━━━━━━━━━━\n💰 *الإجمالي:* ${total.toFixed(2)}${storeSettings.currency}\n\n`;
   message += `📅 التاريخ: ${new Date().toLocaleDateString('ar-EG')}`;
   
-  const encodedMessage = encodeURIComponent(message);
-  window.open(`https://wa.me/${storeSettings.whatsappNumber}?text=${encodedMessage}`, '_blank');
+  window.open(`https://wa.me/${storeSettings.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
   
-  if (confirm("هل تم إرسال الطلب بنجاح؟ سيتم تفريغ السلة الآن.")) {
+  if (confirm("هل تم إرسال الطلب بنجاح؟ سيتم تفريغ السلة.")) {
     cart = [];
     saveCart();
     updateCartUI();
-    cartOverlay.classList.add('hidden');
+    document.getElementById('cartOverlay').classList.add('hidden');
   }
 });
 
 // ==========================================
-// 11. البروفايل
+// 9. البروفايل
 // ==========================================
 document.getElementById('profileBtn').addEventListener('click', () => {
   document.getElementById('profileModal').classList.remove('hidden');
@@ -356,7 +474,5 @@ document.getElementById('closeProfileBtn').addEventListener('click', () => {
   document.getElementById('profileModal').classList.add('hidden');
 });
 document.getElementById('profileModal').addEventListener('click', (e) => {
-  if (e.target.id === 'profileModal') {
-    document.getElementById('profileModal').classList.add('hidden');
-  }
+  if (e.target.id === 'profileModal') document.getElementById('profileModal').classList.add('hidden');
 });
