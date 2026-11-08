@@ -53,6 +53,7 @@
   <!-- ===== المحتوى الرئيسي ===== -->
   <main class="main-content">
     
+    <!-- الهيدر -->
     <header class="top-header">
       <div class="header-left">
         <h1 id="pageTitle">إدارة المنتجات</h1>
@@ -65,6 +66,7 @@
       </div>
     </header>
 
+    <!-- منطقة المحتوى -->
     <div class="content-area">
       
       <!-- 1. قسم المنتجات -->
@@ -75,13 +77,32 @@
           </div>
           <button class="btn btn-primary" id="addProductBtn">➕ إضافة منتج جديد</button>
         </div>
-
         <div class="products-grid" id="productsGrid">
           <div class="empty-state"><p>⏳ جاري تحميل المنتجات...</p></div>
         </div>
       </section>
 
-      <!-- 2. قسم الزبائن -->
+      <!-- 2. قسم التصنيفات -->
+      <section id="section-categories" class="content-section">
+        <div class="section-toolbar">
+          <button class="btn btn-primary" id="addCategoryBtn">➕ إضافة تصنيف جديد</button>
+        </div>
+        <div class="products-grid" id="categoriesGrid">
+          <div class="empty-state"><p>⏳ جاري تحميل التصنيفات...</p></div>
+        </div>
+      </section>
+
+      <!-- 3. قسم العروض -->
+      <section id="section-offers" class="content-section">
+        <div class="section-toolbar">
+          <button class="btn btn-primary" id="addOfferBtn">➕ إضافة عرض جديد</button>
+        </div>
+        <div class="products-grid" id="offersGrid">
+          <div class="empty-state"><p>⏳ جاري تحميل العروض...</p></div>
+        </div>
+      </section>
+
+      <!-- 4. قسم الزبائن -->
       <section id="section-customers" class="content-section">
         <div class="section-toolbar">
           <div class="search-box">
@@ -89,49 +110,64 @@
           </div>
           <button class="btn btn-primary" id="addCustomerBtn">➕ إضافة زبون جديد</button>
         </div>
-        
         <div class="products-grid" id="customersGrid">
           <div class="empty-state"><p>⏳ جاري تحميل الزبائن...</p></div>
         </div>
       </section>
 
-      <!-- باقي الأقسام -->
-      <section id="section-categories" class="content-section">
-        <div class="empty-state"><p>قسم التصنيفات - قيد الإنشاء</p></div>
-      </section>
-      
-      <section id="section-offers" class="content-section">
-        <div class="empty-state"><p>قسم العروض - قيد الإنشاء</p></div>
-      </section>
-      
+      <!-- 5. قسم الإشعارات -->
       <section id="section-notifications" class="content-section">
-        <div class="empty-state"><p>قسم الإشعارات - قيد الإنشاء</p></div>
+        <div class="section-toolbar">
+          <button class="btn btn-primary" id="addNotificationBtn">➕ إرسال إشعار جديد</button>
+        </div>
+        <div class="products-grid" id="notificationsGrid">
+          <div class="empty-state"><p>⏳ جاري تحميل الإشعارات...</p></div>
+        </div>
       </section>
-      
+
+      <!-- 6. قسم الإعدادات -->
       <section id="section-settings" class="content-section">
-        <div class="empty-state"><p>قسم الإعدادات - قيد الإنشاء</p></div>
+        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px;">
+          <h2 style="margin-bottom: 20px; color: var(--black);">⚙️ إعدادات المتجر</h2>
+          <form id="settingsForm">
+            <div class="form-group">
+              <label>رقم الواتساب لاستقبال الطلبات *</label>
+              <input type="text" id="settingWhatsapp" required placeholder="مثال: 96171447409">
+              <small class="form-hint">اكتب الرقم بدون + وبدون مسافات</small>
+            </div>
+            <div class="form-group">
+              <label>اسم العملة *</label>
+              <input type="text" id="settingCurrency" required placeholder="مثال: $ أو ل.ل">
+            </div>
+            <div class="form-group">
+              <label>رقم الواتساب للتواصل (يظهر في صفحة الدخول)</label>
+              <input type="text" id="settingContactWhatsapp" placeholder="مثال: 96171447409">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: auto;" id="saveSettingsBtn">
+              <span class="btn-text">حفظ الإعدادات</span>
+              <span class="btn-loader hidden">⏳ جاري الحفظ...</span>
+            </button>
+          </form>
+        </div>
       </section>
 
     </div>
   </main>
 
-  <!-- ===== نافذة إضافة/تعديل منتج ===== -->
+  <!-- ===== نافذة المنتج ===== -->
   <div class="modal-overlay hidden" id="productModal">
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="modalTitle">إضافة منتج جديد</h2>
         <button class="modal-close" id="closeModalBtn">✖</button>
       </div>
-
       <form id="productForm" class="modal-body">
         <input type="hidden" id="productId" value="">
-
         <div class="form-row">
           <div class="form-group">
             <label for="productName">اسم المنتج *</label>
             <input type="text" id="productName" required placeholder="مثال: أرز بسمتي">
           </div>
-
           <div class="form-group">
             <label for="productCategory">التصنيف *</label>
             <select id="productCategory" required>
@@ -140,49 +176,40 @@
             </select>
           </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label for="productPrice">السعر الإجمالي (دولار) *</label>
             <input type="number" id="productPrice" step="0.01" min="0" required placeholder="0.00">
           </div>
-
           <div class="form-group hidden" id="weightGroup">
             <label for="productWeight">وزن الشوال (كغ) *</label>
             <input type="number" id="productWeight" step="0.1" min="0" placeholder="مثال: 50">
           </div>
-
           <div class="form-group hidden" id="unitsGroup">
             <label for="productUnits">عدد الوحدات بالصندوق *</label>
             <input type="number" id="productUnits" step="1" min="1" placeholder="مثال: 12">
           </div>
         </div>
-
-        <!-- رفع الصورة -->
         <div class="form-group">
           <label>صورة المنتج *</label>
           <div class="image-upload-wrapper">
             <input type="file" id="productImageFile" accept="image/*" class="hidden">
-            <input type="hidden" id="productImage" required> 
-            
+            <input type="hidden" id="productImage" required>
             <label for="productImageFile" class="upload-btn" id="uploadLabel">
               <span id="uploadText">📷 اختر صورة للرفع</span>
               <span id="uploadLoader" class="hidden">⏳ جاري الرفع...</span>
             </label>
-            
             <div id="imagePreviewContainer" class="hidden">
               <img id="imagePreview" src="" alt="معاينة">
               <button type="button" id="removeImageBtn" class="remove-img">✖ إزالة</button>
             </div>
           </div>
-          <small class="form-hint">ارفع صورة من جهازك (الحد الأقصى 5 ميغابايت)</small>
+          <small class="form-hint">ارفع صورة من جهازك (JPG, PNG - أقل من 5MB)</small>
         </div>
-
         <div class="form-group">
           <label for="productDescription">وصف المنتج (اختياري)</label>
           <textarea id="productDescription" rows="3" placeholder="وصف مختصر للمنتج..."></textarea>
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" id="cancelBtn">إلغاء</button>
           <button type="submit" class="btn btn-primary" id="saveProductBtn">
@@ -194,7 +221,7 @@
     </div>
   </div>
 
-  <!-- ===== نافذة إضافة زبون ===== -->
+  <!-- ===== نافذة الزبون ===== -->
   <div class="modal-overlay hidden" id="customerModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -213,18 +240,105 @@
           </div>
         </div>
         <div class="form-group">
-  <label>رقم الهاتف *</label>
-  <input type="text" id="custPhone" required placeholder="مثال: 96171447409">
-</div>
-<div class="form-group">
-  <label>كلمة المرور للدخول *</label>
-  <input type="password" id="custPassword" required minlength="6" placeholder="6 أحرف على الأقل">
-</div>
+          <label>رقم الهاتف *</label>
+          <input type="text" id="custPhone" required placeholder="مثال: 96171447409">
+        </div>
+        <div class="form-group">
+          <label>كلمة المرور للدخول *</label>
+          <input type="password" id="custPassword" required minlength="6" placeholder="6 أحرف على الأقل">
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" id="cancelCustBtn">إلغاء</button>
           <button type="submit" class="btn btn-primary" id="saveCustBtn">
-            <span class="btn-text">حفظ بيانات الزبون</span>
-            <span class="btn-loader hidden">⏳ جاري الحفظ...</span>
+            <span class="btn-text">إنشاء الحساب</span>
+            <span class="btn-loader hidden">⏳ جاري الإنشاء...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== نافذة التصنيف ===== -->
+  <div class="modal-overlay hidden" id="categoryModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="categoryModalTitle">إضافة تصنيف</h2>
+        <button class="modal-close" id="closeCategoryModal">✖</button>
+      </div>
+      <form id="categoryForm" class="modal-body">
+        <input type="hidden" id="categoryId" value="">
+        <div class="form-group">
+          <label>اسم التصنيف *</label>
+          <input type="text" id="categoryName" required placeholder="مثال: معلبات">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelCategoryBtn">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
+            <span class="btn-text">حفظ</span>
+            <span class="btn-loader hidden">⏳...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== نافذة العرض ===== -->
+  <div class="modal-overlay hidden" id="offerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="offerModalTitle">إضافة عرض</h2>
+        <button class="modal-close" id="closeOfferModal">✖</button>
+      </div>
+      <form id="offerForm" class="modal-body">
+        <input type="hidden" id="offerId" value="">
+        <div class="form-group">
+          <label>المنتج *</label>
+          <select id="offerProductId" required>
+            <option value="">-- اختر منتج --</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>الكمية المطلوبة *</label>
+            <input type="number" id="offerBuyQty" min="1" required placeholder="مثال: 10">
+          </div>
+          <div class="form-group">
+            <label>الكمية المجانية *</label>
+            <input type="number" id="offerFreeQty" min="1" required placeholder="مثال: 1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>وصف العرض (اختياري)</label>
+          <input type="text" id="offerDescription" placeholder="مثال: كل 10 صناديق احصل على 1 مجاناً">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelOfferBtn">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="saveOfferBtn">
+            <span class="btn-text">حفظ</span>
+            <span class="btn-loader hidden">⏳...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== نافذة الإشعار ===== -->
+  <div class="modal-overlay hidden" id="notificationModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>إرسال إشعار</h2>
+        <button class="modal-close" id="closeNotifModal">✖</button>
+      </div>
+      <form id="notificationForm" class="modal-body">
+        <div class="form-group">
+          <label>نص الإشعار *</label>
+          <textarea id="notifMessage" rows="4" required placeholder="مثال: يوجد خصم 10% على جميع المنتجات اليوم!"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelNotifBtn">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="saveNotifBtn">
+            <span class="btn-text">إرسال</span>
+            <span class="btn-loader hidden">⏳...</span>
           </button>
         </div>
       </form>
