@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المتجر - سنابل الخيرات للتموين</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/shop.css">
+</head>
+<body class="shop-body">
+
+  <!-- ===== الهيدر ===== -->
+  <header class="shop-header">
+    <div class="header-brand">
+      <span class="logo-icon">🌾</span>
+      <h1>سنابل الخيرات</h1>
+    </div>
+    
+    <div class="header-actions">
+      <button class="cart-btn" id="cartBtn">
+        🛒 <span class="cart-count" id="cartCount">0</span>
+      </button>
+      <button class="profile-btn" id="profileBtn">
+        <span class="admin-avatar">👤</span>
+        <span id="userName">...</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== شريط الإشعارات (يظهر لو في إشعارات) ===== -->
+  <div id="notificationBanner" class="notification-banner hidden">
+    <span id="notificationText"></span>
+    <button id="closeNotification">✖</button>
+  </div>
+
+  <!-- ===== المحتوى الرئيسي ===== -->
+  <main class="shop-main">
+    
+    <!-- البحث والتصنيفات -->
+    <div class="shop-toolbar">
+      <div class="search-box">
+        <input type="text" id="searchShop" placeholder="🔍 ابحث عن منتج...">
+      </div>
+      <div class="category-filter" id="categoryFilter">
+        <button class="cat-btn active" data-cat="all">الكل</button>
+        <!-- التصنيفات رح تتحمل من Firebase -->
+      </div>
+    </div>
+
+    <!-- شبكة المنتجات -->
+    <div class="products-grid" id="shopProductsGrid">
+      <div class="empty-state"><p>⏳ جاري تحميل المنتجات...</p></div>
+    </div>
+
+  </main>
+
+  <!-- ===== سلة المشتريات (Drawer) ===== -->
+  <div class="cart-overlay hidden" id="cartOverlay">
+    <div class="cart-drawer">
+      <div class="cart-header">
+        <h2>🛒 سلة المشتريات</h2>
+        <button class="modal-close" id="closeCartBtn">✖</button>
+      </div>
+
+      <div class="cart-items" id="cartItems">
+        <div class="empty-state"><p>السلة فاضية.</p></div>
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>الإجمالي:</span>
+          <span id="cartTotal">$0.00</span>
+        </div>
+        <button class="btn btn-primary" id="checkoutBtn">
+          <span>📱 إتمام الطلب عبر واتساب</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== بروفايل الزبون (Modal) ===== -->
+  <div class="modal-overlay hidden" id="profileModal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>👤 حسابي</h2>
+        <button class="modal-close" id="closeProfileBtn">✖</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div class="profile-avatar-large">👤</div>
+        <h3 id="profileName" style="margin: 15px 0; color: var(--black);">...</h3>
+        <p class="text-muted" id="profileUsername" style="margin-bottom: 20px;">...</p>
+        <button class="btn btn-outline" id="logoutShopBtn" style="width: 100%; color: var(--error); border-color: var(--error);">
+          🚪 تسجيل خروج
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/shop.js"></script>
+</body>
+</html>
