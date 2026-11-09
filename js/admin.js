@@ -73,7 +73,8 @@ const addProductBtn = document.getElementById('addProductBtn');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const productForm = document.getElementById('productForm');
-const productCategory = document.getElementById('productCategory');
+const productType = document.getElementById('productType');
+const productSubCategory = document.getElementById('productSubCategory');
 const weightGroup = document.getElementById('weightGroup');
 const unitsGroup = document.getElementById('unitsGroup');
 const productsGrid = document.getElementById('productsGrid');
@@ -102,7 +103,7 @@ cancelBtn.addEventListener('click', closeModal);
 productModal.addEventListener('click', (e) => { if (e.target === productModal) closeModal(); });
 
 function toggleCategoryFields() {
-  if (productCategory.value === 'bag') {
+  if (productType.value === 'bag') {
     weightGroup.classList.remove('hidden');
     unitsGroup.classList.add('hidden');
   } else {
@@ -110,22 +111,30 @@ function toggleCategoryFields() {
     weightGroup.classList.add('hidden');
   }
 }
-productCategory.addEventListener('change', toggleCategoryFields);
+productType.addEventListener('change', toggleCategoryFields);
 
+// حفظ المنتج
 productForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const productId = document.getElementById('productId').value;
   const name = document.getElementById('productName').value.trim();
-  const category = productCategory.value;
+  const type = productType.value;
+  const subCategory = productSubCategory.value;
   const price = parseFloat(document.getElementById('productPrice').value);
   const imageUrl = document.getElementById('productImage').value.trim();
   const description = document.getElementById('productDescription').value.trim();
 
   if (!imageUrl) return alert("الرجاء رفع صورة للمنتج أولاً");
   
-  const productData = { name, category, price, imageUrl, description, isActive: true, updatedAt: serverTimestamp() };
+  const productData = { 
+    name, 
+    category: type, 
+    subCategory: subCategory,
+    price, imageUrl, description, 
+    isActive: true, updatedAt: serverTimestamp() 
+  };
   
-  if (category === 'bag') {
+  if (type === 'bag') {
     productData.weightKg = parseFloat(document.getElementById('productWeight').value);
     if (!productData.weightKg || productData.weightKg <= 0) return alert("الرجاء إدخال وزن صحيح للشوال");
   } else {
@@ -159,6 +168,7 @@ productForm.addEventListener('submit', async (e) => {
   }
 });
 
+// عرض المنتجات
 const qProducts = query(collection(db, "products"), orderBy("createdAt", "desc"));
 onSnapshot(qProducts, (snapshot) => {
   allProducts = [];
@@ -168,20 +178,24 @@ onSnapshot(qProducts, (snapshot) => {
 
 function renderProducts(products) {
   if (products.length === 0) {
-    productsGrid.innerHTML = `<div class="empty-state"><p>لا توجد منتجات بعد. اضغط "إضافة منتج جديد" للبدء.</p></div>`;
+    productsGrid.innerHTML = `<div class="empty-state"><p>لا توجد منتجات بعد.</p></div>`;
     return;
   }
   productsGrid.innerHTML = products.map(product => {
     let unitPriceText = '';
-    if (product.category === 'bag' && product.weightKg) unitPriceText = `سعر الكيلو: $${(product.price / product.weightKg).toFixed(2)}`;
-    else if (product.category === 'box' && product.unitsPerBox) unitPriceText = `سعر الحبة: $${(product.price / product.unitsPerBox).toFixed(2)}`;
-    const categoryLabel = product.category === 'bag' ? '🎒 شوال' : '📦 صندوق';
+    if (product.category === 'bag' && product.weightKg) {
+      unitPriceText = `سعر الكيلو: $${(product.price / product.weightKg).toFixed(2)}`;
+    } else if (product.category === 'box' && product.unitsPerBox) {
+      unitPriceText = `سعر الحبة: $${(product.price / product.unitsPerBox).toFixed(2)}`;
+    }
+    const typeLabel = product.category === 'bag' ? '🎒 شوال' : '📦 صندوق';
+    const subCatLabel = product.subCategory ? ` • ${product.subCategory}` : '';
 
     return `
       <div class="product-card">
         <img src="${product.imageUrl}" alt="${product.name}" class="product-img" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
         <div class="product-info">
-          <span class="product-badge">${categoryLabel}</span>
+          <span class="product-badge">${typeLabel}${subCatLabel}</span>
           <h3 class="product-title">${product.name}</h3>
           <p class="product-price">السعر: <strong>$${product.price}</strong></p>
           <p class="product-unit-price">${unitPriceText}</p>
@@ -202,13 +216,20 @@ window.editProduct = (id) => {
   document.getElementById('productName').value = product.name;
   document.getElementById('productPrice').value = product.price;
   document.getElementById('productDescription').value = product.description || '';
-  productCategory.value = product.category;
+  productType.value = product.category;
+  if (product.subCategory) productSubCategory.value = product.subCategory;
+  
   productImageField.value = product.imageUrl;
   imagePreview.src = product.imageUrl;
   imagePreviewContainer.classList.remove('hidden');
   uploadText.textContent = '🔄 تغيير الصورة';
-  if (product.category === 'bag') document.getElementById('productWeight').value = product.weightKg || '';
-  else document.getElementById('productUnits').value = product.unitsPerBox || '';
+  
+  if (product.category === 'bag') {
+    document.getElementById('productWeight').value = product.weightKg || '';
+  } else {
+    document.getElementById('productUnits').value = product.unitsPerBox || '';
+  }
+  
   document.getElementById('modalTitle').textContent = 'تعديل المنتج';
   toggleCategoryFields();
   productModal.classList.remove('hidden');
@@ -216,7 +237,8 @@ window.editProduct = (id) => {
 
 window.deleteProduct = async (id) => {
   if (confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟')) {
-    try { await deleteDoc(doc(db, "products", id)); } catch (error) { alert(error.message); }
+    try { await deleteDoc(doc(db, "products", id)); } 
+    catch (error) { alert("حدث خطأ أثناء الحذف: " + error.message); }
   }
 };
 
@@ -322,12 +344,16 @@ function renderCustomers(customers) {
 window.toggleBlockCustomer = async (id, currentStatus) => {
   const action = currentStatus ? 'فك الحظر عن' : 'حظر';
   if (!confirm(`هل أنت متأكد من ${action} هذا الزبون؟`)) return;
-  try { await updateDoc(doc(db, "users", id), { isBlocked: !currentStatus }); } catch (error) { alert(error.message); }
+  try { await updateDoc(doc(db, "users", id), { isBlocked: !currentStatus }); } 
+  catch (error) { alert("خطأ: " + error.message); }
 };
 
 document.getElementById('searchCustomers').addEventListener('input', (e) => {
   const term = e.target.value.trim().toLowerCase();
-  renderCustomers(allCustomers.filter(c => (c.displayName && c.displayName.toLowerCase().includes(term)) || (c.username && c.username.toLowerCase().includes(term))));
+  renderCustomers(allCustomers.filter(c => 
+    (c.displayName && c.displayName.toLowerCase().includes(term)) || 
+    (c.username && c.username.toLowerCase().includes(term))
+  ));
 });
 
 // ==========================================
@@ -493,7 +519,6 @@ const offersGrid = document.getElementById('offersGrid');
 const offerProductSelect = document.getElementById('offerProductId');
 let allOffers = [];
 
-// تعبئة المنتجات في قائمة الاختيار
 onSnapshot(collection(db, "products"), (snapshot) => {
   offerProductSelect.innerHTML = '<option value="">-- اختر منتج --</option>';
   snapshot.forEach(doc => {
@@ -606,3 +631,16 @@ onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")),
 window.deleteNotification = async (id) => {
   if (confirm('حذف هذا الإشعار؟')) { await deleteDoc(doc(db, "notifications", id)); }
 };
+
+// ==========================================
+// 10. ملء التصنيفات الثانوية في نافذة المنتج
+// ==========================================
+onSnapshot(collection(db, "categories"), (snapshot) => {
+  const subCatSelect = document.getElementById('productSubCategory');
+  if (!subCatSelect) return;
+  subCatSelect.innerHTML = '<option value="">-- بدون تصنيف --</option>';
+  snapshot.forEach(doc => {
+    const cat = doc.data();
+    subCatSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+  });
+});
