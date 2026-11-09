@@ -217,7 +217,11 @@ function renderCategories() {
 function renderProducts() {
   let filtered = allProducts;
   if (currentCategory !== 'all') {
-    filtered = filtered.filter(p => p.category === currentCategory || p.name.includes(currentCategory));
+    filtered = filtered.filter(p => 
+  p.category === currentCategory || 
+  p.subCategory === currentCategory || 
+  p.name.includes(currentCategory)
+);
   }
   
   const searchTerm = document.getElementById('searchShop').value.trim().toLowerCase();
