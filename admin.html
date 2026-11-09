@@ -163,19 +163,30 @@
       </div>
       <form id="productForm" class="modal-body">
         <input type="hidden" id="productId" value="">
+        
+        <div class="form-group">
+          <label for="productName">اسم المنتج *</label>
+          <input type="text" id="productName" required placeholder="مثال: أرز بسمتي">
+        </div>
+
         <div class="form-row">
           <div class="form-group">
-            <label for="productName">اسم المنتج *</label>
-            <input type="text" id="productName" required placeholder="مثال: أرز بسمتي">
-          </div>
-          <div class="form-group">
-            <label for="productCategory">التصنيف *</label>
-            <select id="productCategory" required>
+            <label for="productType">نوع العبوة *</label>
+            <select id="productType" required>
               <option value="box">📦 صندوق</option>
               <option value="bag">🎒 شوال</option>
             </select>
           </div>
+
+          <div class="form-group">
+            <label for="productSubCategory">التصنيف الثانوي (اختياري)</label>
+            <select id="productSubCategory">
+              <option value="">-- بدون تصنيف --</option>
+              <!-- رح تتحمل من الجافاسكريبت -->
+            </select>
+          </div>
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label for="productPrice">السعر الإجمالي (دولار) *</label>
@@ -190,6 +201,7 @@
             <input type="number" id="productUnits" step="1" min="1" placeholder="مثال: 12">
           </div>
         </div>
+
         <div class="form-group">
           <label>صورة المنتج *</label>
           <div class="image-upload-wrapper">
@@ -206,10 +218,12 @@
           </div>
           <small class="form-hint">ارفع صورة من جهازك (JPG, PNG - أقل من 5MB)</small>
         </div>
+
         <div class="form-group">
           <label for="productDescription">وصف المنتج (اختياري)</label>
           <textarea id="productDescription" rows="3" placeholder="وصف مختصر للمنتج..."></textarea>
         </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" id="cancelBtn">إلغاء</button>
           <button type="submit" class="btn btn-primary" id="saveProductBtn">
