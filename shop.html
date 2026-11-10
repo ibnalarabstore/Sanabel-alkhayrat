@@ -4,35 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>المتجر - سنابل الخيرات للتموين</title>
-
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-
+  
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/shop.css">
 </head>
 <body class="shop-body">
 
-  <!-- ===== الهيدر ===== -->
+  <!-- ===== الهيدر الثابت ===== -->
   <header class="shop-header">
     <div class="header-brand">
       <span class="logo-icon">🌾</span>
       <h1>سنابل الخيرات</h1>
     </div>
-
+    
     <div class="header-actions">
-      <button type="button" class="notif-btn" id="notifBtn" aria-label="الإشعارات">
+      <button class="notif-btn" id="notifBtn">
         🔔
         <span class="notif-count hidden" id="notifCount">0</span>
       </button>
 
-      <button type="button" class="profile-btn" id="profileBtn" aria-label="الملف الشخصي">
+      <button class="profile-btn" id="profileBtn">
         <span class="user-icon">👤</span>
         <span id="userName" class="user-name">...</span>
       </button>
-
-      <button type="button" class="cart-btn" id="cartBtn" aria-label="سلة المشتريات">
+      
+      <button class="cart-btn" id="cartBtn">
         <span class="cart-icon">🛒</span>
         <span class="cart-count" id="cartCount">0</span>
       </button>
@@ -41,18 +41,16 @@
 
   <!-- ===== المحتوى الرئيسي ===== -->
   <main class="shop-main">
-
-    <!-- البحث والتصنيف -->
+    
     <div class="shop-toolbar">
       <div class="search-box">
-        <input type="text" id="searchShop" placeholder="🔍 ابحث عن منتج..." aria-label="ابحث عن منتج">
+        <input type="text" id="searchShop" placeholder="🔍 ابحث عن منتج...">
       </div>
-      <div class="category-filter" id="categoryFilter" role="group" aria-label="التصنيفات">
-        <button type="button" class="cat-btn active" data-cat="all">الكل</button>
+      <div class="category-filter" id="categoryFilter">
+        <button class="cat-btn active" data-cat="all">الكل</button>
       </div>
     </div>
 
-    <!-- شبكة المنتجات -->
     <div class="products-grid" id="shopProductsGrid">
       <div class="loading-state"><p>⏳ جاري تحميل المنتجات...</p></div>
     </div>
@@ -61,10 +59,10 @@
 
   <!-- ===== سلة المشتريات ===== -->
   <div class="cart-overlay hidden" id="cartOverlay">
-    <div class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="cart-drawer">
       <div class="cart-header">
-        <h2 id="cartTitle">🛒 سلة المشتريات</h2>
-        <button type="button" class="close-btn" id="closeCartBtn" aria-label="إغلاق">✖</button>
+        <h2>🛒 سلة المشتريات</h2>
+        <button class="close-btn" id="closeCartBtn">✖</button>
       </div>
 
       <div class="cart-items" id="cartItems">
@@ -76,7 +74,7 @@
           <span>الإجمالي:</span>
           <span id="cartTotal">0.00$</span>
         </div>
-        <button type="button" class="checkout-btn" id="checkoutBtn">
+        <button class="checkout-btn" id="checkoutBtn">
           📱 إتمام الطلب عبر واتساب
         </button>
       </div>
@@ -85,14 +83,14 @@
 
   <!-- ===== بروفايل الزبون ===== -->
   <div class="modal-overlay hidden" id="profileModal">
-    <div class="profile-card" role="dialog" aria-modal="true" aria-labelledby="profileName">
-      <button type="button" class="close-btn profile-close" id="closeProfileBtn" aria-label="إغلاق">✖</button>
-
+    <div class="profile-card">
+      <button class="close-btn profile-close" id="closeProfileBtn">✖</button>
+      
       <div class="profile-avatar-large">👤</div>
       <h3 id="profileName" class="profile-name">...</h3>
       <p class="text-muted" id="profileUsername">...</p>
-
-      <button type="button" class="logout-shop-btn" id="logoutShopBtn">
+      
+      <button class="logout-shop-btn" id="logoutShopBtn">
         🚪 تسجيل خروج
       </button>
     </div>
@@ -100,33 +98,74 @@
 
   <!-- ===== نافذة الإشعارات ===== -->
   <div class="modal-overlay hidden" id="notificationsModal">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="notifTitle" style="max-width: 450px; background: white; border-radius: 16px; overflow: hidden;">
+    <div class="modal-content" style="max-width: 450px; background: white; border-radius: 16px; overflow: hidden;">
       <div class="modal-header" style="background: #fafafa; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
-        <h2 id="notifTitle" style="margin: 0; font-size: 1.2rem;">🔔 الإشعارات</h2>
-        <button type="button" class="close-btn" id="closeNotifModal" aria-label="إغلاق" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
+        <h2 style="margin: 0; font-size: 1.2rem;">🔔 الإشعارات</h2>
+        <button class="close-btn" id="closeNotifModal" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
       </div>
       <div class="modal-body" id="notificationsList" style="max-height: 60vh; overflow-y: auto; padding: 15px;">
-        <!-- تتحمل الإشعارات هون من shop.js -->
+        <!-- الإشعارات رح تتحمل هون -->
       </div>
     </div>
   </div>
 
   <!-- ===== نافذة اختيار العرض ===== -->
   <div class="modal-overlay hidden" id="offerChoiceModal">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="offerTitle" style="max-width: 400px; background: white; border-radius: 16px; overflow: hidden;">
+    <div class="modal-content" style="max-width: 400px; background: white; border-radius: 16px; overflow: hidden;">
       <div class="modal-header" style="background: #fafafa; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
-        <h2 id="offerTitle" style="margin: 0; font-size: 1.2rem;">🎁 عرض خاص</h2>
-        <button type="button" class="close-btn" id="closeOfferModal" aria-label="إغلاق" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
+        <h2 style="margin: 0; font-size: 1.2rem;">🎁 عرض خاص</h2>
+        <button class="close-btn" id="closeOfferModal" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
       </div>
       <div class="modal-body" style="padding: 20px; text-align: center;">
         <div id="offerDetails" style="margin-bottom: 20px;"></div>
-
-        <button type="button" class="btn btn-outline" id="chooseSingleBtn" style="width:100%; margin-bottom:10px; padding: 12px; border-radius: 10px; border: 2px solid #ddd; background: white; font-weight: 700; cursor: pointer;">
+        
+        <button class="btn btn-outline" id="chooseSingleBtn" style="width:100%; margin-bottom:10px; padding: 12px; border-radius: 10px; border: 2px solid #ddd; background: white; font-weight: 700; cursor: pointer;">
           🛒 إضافة منتج واحد فقط
         </button>
-        <button type="button" class="btn btn-primary" id="chooseFullOfferBtn" style="width:100%; padding: 12px; border-radius: 10px; border: none; background: #d4af37; color: black; font-weight: 700; cursor: pointer;">
+        <button class="btn btn-primary" id="chooseFullOfferBtn" style="width:100%; padding: 12px; border-radius: 10px; border: none; background: #d4af37; color: black; font-weight: 700; cursor: pointer;">
           🎁 إضافة العرض كامل
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة تفاصيل المنتج ===== -->
+  <div class="modal-overlay hidden" id="productDetailsModal">
+    <div class="modal-content" style="max-width: 500px; background: white; border-radius: 16px; overflow: hidden;">
+      <div class="modal-header" style="background: #fafafa; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+        <h2 style="margin: 0; font-size: 1.2rem;">تفاصيل المنتج</h2>
+        <button class="close-btn" id="closeProductDetailsBtn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
+      </div>
+      <div class="modal-body" style="padding: 0; max-height: 80vh; overflow-y: auto;">
+        <img id="detailImage" style="width: 100%; height: 250px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/500x250?text=No+Image'">
+        <div style="padding: 20px;">
+          <h2 id="detailName" style="margin: 0 0 10px 0; color: #111; font-size: 1.4rem;"></h2>
+          
+          <div id="detailOfferBox" class="detail-offer-box hidden">
+            <!-- تفاصيل العرض رح تتحمل هون -->
+          </div>
+
+          <div class="detail-info-grid">
+            <div class="detail-info-item">
+              <span class="detail-label">السعر الإجمالي</span>
+              <strong id="detailPrice"></strong>
+            </div>
+            <div class="detail-info-item">
+              <span class="detail-label" id="detailUnitLabel">سعر الوحدة</span>
+              <strong id="detailUnitPrice"></strong>
+            </div>
+            <div class="detail-info-item">
+              <span class="detail-label" id="detailQtyLabel">الكمية</span>
+              <strong id="detailQuantity"></strong>
+            </div>
+          </div>
+
+          <p id="detailDescription" style="margin-top: 15px; color: #555; font-size: 0.95rem; line-height: 1.6;"></p>
+
+          <button class="add-to-cart-btn" id="detailAddToCartBtn" style="margin-top: 20px; padding: 15px; font-size: 1.1rem;">
+            ➕ أضف للسلة
+          </button>
+        </div>
       </div>
     </div>
   </div>
