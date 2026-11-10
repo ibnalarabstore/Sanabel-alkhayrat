@@ -875,3 +875,58 @@
     transition-duration: .01ms !important;
   }
 }
+/* ===== تفاصيل المنتج ===== */
+.detail-offer-box {
+  background: linear-gradient(135deg, #fff8e1, #fff3cd);
+  border: 1px solid #d4af37;
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+}
+
+.offer-title {
+  color: #aa8c2c;
+  font-weight: 800;
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+.offer-savings {
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.detail-info-item {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-info-item:last-child {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.detail-info-item strong {
+  color: #111;
+  font-size: 1.05rem;
+}
+
+/* جعل كرت المنتج قابل للكبس */
+.product-card {
+  cursor: pointer;
+}
