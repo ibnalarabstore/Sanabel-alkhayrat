@@ -218,10 +218,10 @@ function renderProducts() {
   let filtered = allProducts;
   if (currentCategory !== 'all') {
     filtered = filtered.filter(p => 
-  p.category === currentCategory || 
-  p.subCategory === currentCategory || 
-  p.name.includes(currentCategory)
-);
+      p.category === currentCategory || 
+      p.subCategory === currentCategory || 
+      p.name.includes(currentCategory)
+    );
   }
   
   const searchTerm = document.getElementById('searchShop').value.trim().toLowerCase();
@@ -233,27 +233,27 @@ function renderProducts() {
   }
   
   shopProductsGrid.innerHTML = filtered.map(product => {
-    let unitPrice = '';
+    let qtyText = '';
     if (product.category === 'bag' && product.weightKg) {
-      unitPrice = `سعر الكيلو: ${(product.price / product.weightKg).toFixed(2)}${storeSettings.currency}`;
+      qtyText = `الوزن: ${product.weightKg} كغ`;
     } else if (product.category === 'box' && product.unitsPerBox) {
-      unitPrice = `سعر الحبة: ${(product.price / product.unitsPerBox).toFixed(2)}${storeSettings.currency}`;
+      qtyText = `العدد: ${product.unitsPerBox} حبة`;
     }
     
     const offer = allOffers.find(o => o.productId === product.id && o.isActive);
     const offerBadge = offer ? `<div class="offer-badge">🎁 اشترِ ${offer.buyQty} واحصل على ${offer.freeQty} مجاناً!</div>` : '';
     
     return `
-      <div class="product-card">
+      <div class="product-card" onclick="openProductDetails('${product.id}')">
         <img src="${product.imageUrl}" alt="${product.name}" class="product-img" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
         <div class="product-info">
           ${offerBadge}
           <h3 class="product-title">${product.name}</h3>
           <div class="product-price-box">
             <strong>${product.price}${storeSettings.currency}</strong>
-            <small>${unitPrice}</small>
+            <small>${qtyText}</small>
           </div>
-          <button class="add-to-cart-btn" onclick="handleAddToCart('${product.id}')">➕ أضف للسلة</button>
+          <button class="add-to-cart-btn" onclick="event.stopPropagation(); handleAddToCart('${product.id}')">➕ أضف للسلة</button>
         </div>
       </div>
     `;
@@ -261,6 +261,60 @@ function renderProducts() {
 }
 
 document.getElementById('searchShop').addEventListener('input', renderProducts);
+
+// ==========================================
+// نافذة تفاصيل المنتج
+// ==========================================
+window.openProductDetails = (productId) => {
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return;
+  
+  document.getElementById('detailImage').src = product.imageUrl;
+  document.getElementById('detailName').textContent = product.name;
+  document.getElementById('detailDescription').textContent = product.description || '';
+  document.getElementById('detailPrice').textContent = `${product.price}${storeSettings.currency}`;
+  
+  const offer = allOffers.find(o => o.productId === product.id && o.isActive);
+  
+  if (product.category === 'bag' && product.weightKg) {
+    document.getElementById('detailUnitLabel').textContent = 'سعر الكيلو';
+    document.getElementById('detailUnitPrice').textContent = `${(product.price / product.weightKg).toFixed(2)}${storeSettings.currency}`;
+    document.getElementById('detailQtyLabel').textContent = 'وزن الشوال';
+    document.getElementById('detailQuantity').textContent = `${product.weightKg} كغ`;
+  } else if (product.category === 'box' && product.unitsPerBox) {
+    document.getElementById('detailUnitLabel').textContent = 'سعر الحبة';
+    document.getElementById('detailUnitPrice').textContent = `${(product.price / product.unitsPerBox).toFixed(2)}${storeSettings.currency}`;
+    document.getElementById('detailQtyLabel').textContent = 'عدد الحبات';
+    document.getElementById('detailQuantity').textContent = `${product.unitsPerBox} حبة`;
+  }
+  
+  const offerBox = document.getElementById('detailOfferBox');
+  if (offer) {
+    const freeValue = product.price * offer.freeQty;
+    offerBox.classList.remove('hidden');
+    offerBox.innerHTML = `
+      <div class="offer-title">🎁 عرض خاص: اشترِ ${offer.buyQty} واحصل على ${offer.freeQty} مجاناً</div>
+      <div class="offer-savings">💰 توفير: ${freeValue.toFixed(2)}${storeSettings.currency} (قيمة ${offer.freeQty} مجاناً)</div>
+    `;
+  } else {
+    offerBox.classList.add('hidden');
+  }
+  
+  const addBtn = document.getElementById('detailAddToCartBtn');
+  addBtn.onclick = () => {
+    handleAddToCart(product.id);
+    document.getElementById('productDetailsModal').classList.add('hidden');
+  };
+  
+  document.getElementById('productDetailsModal').classList.remove('hidden');
+};
+
+document.getElementById('closeProductDetailsBtn').addEventListener('click', () => {
+  document.getElementById('productDetailsModal').classList.add('hidden');
+});
+document.getElementById('productDetailsModal').addEventListener('click', (e) => {
+  if (e.target.id === 'productDetailsModal') document.getElementById('productDetailsModal').classList.add('hidden');
+});
 
 // ==========================================
 // 7. السلة والعروض
