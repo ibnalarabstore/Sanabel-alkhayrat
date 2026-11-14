@@ -211,3 +211,131 @@
     transform: none;
   }
 }
+
+
+/* ============================================
+   إضافات مطابقة لملف HTML (index / login)
+   ============================================ */
+
+/* خط الصفحة وتوسيط الكرت (بدون الحاجة لكلاس على body) */
+body:has(.login-container) {
+  font-family: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: var(--offwhite);
+  color: var(--black);
+}
+
+.login-container .hidden {
+  display: none !important;
+}
+
+/* ===== النموذج ===== */
+.login-form {
+  display: grid;
+  gap: 18px;
+}
+
+.login-form .form-group {
+  display: grid;
+  gap: 6px;
+}
+
+.login-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.login-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 1rem;            /* 16px+ يمنع تكبير الصفحة تلقائياً في iOS */
+  color: var(--black);
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.login-form input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
+}
+
+/* حقل كلمة المرور: مساحة لزر العين (تتفوق على القاعدة العامة) */
+.login-form .password-wrapper input {
+  padding-inline-end: 52px;
+}
+
+/* ===== رسالة الخطأ ===== */
+.error-message {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #b3261e;
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid rgba(179, 38, 30, 0.3);
+  border-inline-start: 4px solid #b3261e;
+  border-radius: var(--radius-sm);
+  animation: shake 0.35s var(--ease);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+/* ===== زر الدخول (يكمّل global.css) ===== */
+.login-form .btn-primary {
+  width: 100%;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.login-form .btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login-form .btn-primary:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ===== الفاصل "ليس لديك حساب؟" ===== */
+.contact-section {
+  margin-block-start: 24px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block-end: 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-message { animation: none; }
+}
