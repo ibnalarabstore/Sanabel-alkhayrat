@@ -14,7 +14,7 @@
 </head>
 <body class="shop-body">
 
-  <!-- ===== الهيدر الثابت ===== -->
+  <!-- ===== الهيدر ===== -->
   <header class="shop-header">
     <div class="header-brand">
       <span class="logo-icon">🌾</span>
@@ -22,14 +22,10 @@
     </div>
     
     <div class="header-actions">
-      <button class="notif-btn" id="notifBtn">
-        🔔
-        <span class="notif-count hidden" id="notifCount">0</span>
-      </button>
-
-      <button class="profile-btn" id="profileBtn">
-        <span class="user-icon">👤</span>
-        <span id="userName" class="user-name">...</span>
+      <!-- زر القائمة الجانبية -->
+      <button class="menu-btn" id="menuBtn">
+        ☰
+        <span class="notif-dot hidden" id="notifDot"></span>
       </button>
       
       <button class="cart-btn" id="cartBtn">
@@ -39,9 +35,35 @@
     </div>
   </header>
 
+  <!-- ===== القائمة الجانبية (Drawer) ===== -->
+  <div class="side-menu-overlay hidden" id="sideMenuOverlay">
+    <aside class="side-menu">
+      <div class="side-menu-header">
+        <div class="profile-avatar-large">👤</div>
+        <h3 id="menuUserName">...</h3>
+        <p id="menuUsername" class="text-muted">...</p>
+      </div>
+      
+      <nav class="side-menu-nav">
+        <button class="side-menu-link" id="menuMyOrdersBtn">
+          <span class="menu-icon">📋</span> طلباتي
+        </button>
+        <button class="side-menu-link" id="menuNotifsBtn">
+          <span class="menu-icon">🔔</span> الإشعارات
+          <span class="notif-count hidden" id="menuNotifCount">0</span>
+        </button>
+      </nav>
+      
+      <div class="side-menu-footer">
+        <button class="logout-shop-btn" id="logoutShopBtn">
+          🚪 تسجيل خروج
+        </button>
+      </div>
+    </aside>
+  </div>
+
   <!-- ===== المحتوى الرئيسي ===== -->
   <main class="shop-main">
-    
     <div class="shop-toolbar">
       <div class="search-box">
         <input type="text" id="searchShop" placeholder="🔍 ابحث عن منتج...">
@@ -54,7 +76,6 @@
     <div class="products-grid" id="shopProductsGrid">
       <div class="loading-state"><p>⏳ جاري تحميل المنتجات...</p></div>
     </div>
-
   </main>
 
   <!-- ===== سلة المشتريات ===== -->
@@ -81,21 +102,6 @@
     </div>
   </div>
 
-  <!-- ===== بروفايل الزبون ===== -->
-  <div class="modal-overlay hidden" id="profileModal">
-    <div class="profile-card">
-      <button class="close-btn profile-close" id="closeProfileBtn">✖</button>
-      
-      <div class="profile-avatar-large">👤</div>
-      <h3 id="profileName" class="profile-name">...</h3>
-      <p class="text-muted" id="profileUsername">...</p>
-      
-      <button class="logout-shop-btn" id="logoutShopBtn">
-        🚪 تسجيل خروج
-      </button>
-    </div>
-  </div>
-
   <!-- ===== نافذة الإشعارات ===== -->
   <div class="modal-overlay hidden" id="notificationsModal">
     <div class="modal-content" style="max-width: 450px; background: white; border-radius: 16px; overflow: hidden;">
@@ -104,7 +110,20 @@
         <button class="close-btn" id="closeNotifModal" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
       </div>
       <div class="modal-body" id="notificationsList" style="max-height: 60vh; overflow-y: auto; padding: 15px;">
-        <!-- الإشعارات رح تتحمل هون -->
+        <!-- الإشعارات -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== نافذة طلباتي ===== -->
+  <div class="modal-overlay hidden" id="myOrdersModal">
+    <div class="modal-content" style="max-width: 600px; background: white; border-radius: 16px; overflow: hidden;">
+      <div class="modal-header" style="background: #fafafa; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+        <h2 style="margin: 0; font-size: 1.2rem;">📋 طلباتي السابقة</h2>
+        <button class="close-btn" id="closeMyOrdersBtn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✖</button>
+      </div>
+      <div class="modal-body" id="myOrdersList" style="max-height: 70vh; overflow-y: auto; padding: 15px;">
+        <div class="empty-cart"><p>⏳ جاري التحميل...</p></div>
       </div>
     </div>
   </div>
@@ -118,7 +137,6 @@
       </div>
       <div class="modal-body" style="padding: 20px; text-align: center;">
         <div id="offerDetails" style="margin-bottom: 20px;"></div>
-        
         <button class="btn btn-outline" id="chooseSingleBtn" style="width:100%; margin-bottom:10px; padding: 12px; border-radius: 10px; border: 2px solid #ddd; background: white; font-weight: 700; cursor: pointer;">
           🛒 إضافة منتج واحد فقط
         </button>
@@ -141,9 +159,7 @@
         <div style="padding: 20px;">
           <h2 id="detailName" style="margin: 0 0 10px 0; color: #111; font-size: 1.4rem;"></h2>
           
-          <div id="detailOfferBox" class="detail-offer-box hidden">
-            <!-- تفاصيل العرض رح تتحمل هون -->
-          </div>
+          <div id="detailOfferBox" class="detail-offer-box hidden"></div>
 
           <div class="detail-info-grid">
             <div class="detail-info-item">
