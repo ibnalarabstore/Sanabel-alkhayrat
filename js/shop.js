@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc, setDoc, collection, query, orderBy, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, collection, orderBy, onSnapshot, arrayUnion, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ==========================================
 // المتغيرات العامة
@@ -15,6 +15,7 @@ let allNotifications = [];
 let readNotifications = [];
 let currentCategory = "all";
 let cart = JSON.parse(localStorage.getItem('sanabelCart')) || [];
+let myOrders = [];
 
 let pendingOffer = null;
 let pendingProductId = null;
@@ -41,9 +42,9 @@ onAuthStateChanged(auth, async (user) => {
         return;
       }
 
-      document.getElementById('userName').textContent = currentUserData.displayName || currentUserData.username;
-      document.getElementById('profileName').textContent = currentUserData.displayName || currentUserData.username;
-      document.getElementById('profileUsername').textContent = "@" + currentUserData.username;
+      const displayName = currentUserData.displayName || currentUserData.username;
+      document.getElementById('menuUserName').textContent = displayName;
+      document.getElementById('menuUsername').textContent = "@" + currentUserData.username;
       
       const readDoc = await getDoc(doc(db, "notificationReads", user.uid));
       if (readDoc.exists()) readNotifications = readDoc.data().readIds || [];
@@ -53,6 +54,7 @@ onAuthStateChanged(auth, async (user) => {
       loadCategories();
       loadOffers();
       loadNotifications();
+      loadMyOrders();
       updateCartUI();
       updateNotifCount();
     } else {
@@ -64,6 +66,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// تسجيل الخروج
 document.getElementById('logoutShopBtn').addEventListener('click', async () => {
   await signOut(auth);
   window.location.href = 'index.html';
@@ -89,10 +92,12 @@ async function loadSettings() {
 // 3. المنتجات والتصنيفات والعروض
 // ==========================================
 function loadProducts() {
-  const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-  onSnapshot(q, (snapshot) => {
+  const q = orderBy("createdAt", "desc");
+  onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = [];
     snapshot.forEach(doc => allProducts.push({ id: doc.id, ...doc.data() }));
+    // ترتيب يدوي لتجنب مشاكل الـ index
+    allProducts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     renderProducts();
   });
 }
@@ -117,24 +122,34 @@ function loadOffers() {
 // 4. الإشعارات
 // ==========================================
 function loadNotifications() {
-  const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
-  onSnapshot(q, (snapshot) => {
+  onSnapshot(collection(db, "notifications"), (snapshot) => {
     allNotifications = [];
     snapshot.forEach(doc => allNotifications.push({ id: doc.id, ...doc.data() }));
+    allNotifications.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     renderNotifications();
     updateNotifCount();
   });
 }
 
 function updateNotifCount() {
-  const countEl = document.getElementById('notifCount');
   const unreadCount = allNotifications.filter(n => !readNotifications.includes(n.id)).length;
   
-  if (unreadCount > 0) {
-    countEl.textContent = unreadCount;
-    countEl.classList.remove('hidden');
-  } else {
-    countEl.classList.add('hidden');
+  // عداد بالقائمة الجانبية
+  const menuCountEl = document.getElementById('menuNotifCount');
+  if (menuCountEl) {
+    if (unreadCount > 0) {
+      menuCountEl.textContent = unreadCount;
+      menuCountEl.classList.remove('hidden');
+    } else {
+      menuCountEl.classList.add('hidden');
+    }
+  }
+  
+  // نقطة على زر القائمة
+  const dotEl = document.getElementById('notifDot');
+  if (dotEl) {
+    if (unreadCount > 0) dotEl.classList.remove('hidden');
+    else dotEl.classList.add('hidden');
   }
 }
 
@@ -164,14 +179,33 @@ window.deleteNotif = async (id) => {
       readIds: arrayUnion(id),
       deletedIds: arrayUnion(id)
     }, { merge: true });
-    
     allNotifications = allNotifications.filter(n => n.id !== id);
     renderNotifications();
     updateNotifCount();
   } catch (error) { alert("خطأ: " + error.message); }
 };
 
-document.getElementById('notifBtn').addEventListener('click', async () => {
+// ==========================================
+// 5. القائمة الجانبية
+// ==========================================
+const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+
+document.getElementById('menuBtn').addEventListener('click', () => {
+  sideMenuOverlay.classList.remove('hidden');
+});
+sideMenuOverlay.addEventListener('click', (e) => {
+  if (e.target === sideMenuOverlay) sideMenuOverlay.classList.add('hidden');
+});
+
+// فتح طلباتي من القائمة
+document.getElementById('menuMyOrdersBtn').addEventListener('click', () => {
+  sideMenuOverlay.classList.add('hidden');
+  document.getElementById('myOrdersModal').classList.remove('hidden');
+});
+
+// فتح الإشعارات من القائمة
+document.getElementById('menuNotifsBtn').addEventListener('click', async () => {
+  sideMenuOverlay.classList.add('hidden');
   document.getElementById('notificationsModal').classList.remove('hidden');
   
   const allIds = allNotifications.map(n => n.id);
@@ -180,19 +214,19 @@ document.getElementById('notifBtn').addEventListener('click', async () => {
       await setDoc(doc(db, "notificationReads", currentUser.uid), {
         readIds: arrayUnion(...allIds)
       }, { merge: true });
-      
       readNotifications = [...new Set([...readNotifications, ...allIds])];
       renderNotifications();
       updateNotifCount();
     } catch (error) { console.error(error); }
   }
 });
+
 document.getElementById('closeNotifModal').addEventListener('click', () => {
   document.getElementById('notificationsModal').classList.add('hidden');
 });
 
 // ==========================================
-// 5. التصنيفات
+// 6. التصنيفات
 // ==========================================
 function renderCategories() {
   let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" data-cat="all">الكل</button>`;
@@ -212,7 +246,7 @@ function renderCategories() {
 }
 
 // ==========================================
-// 6. المنتجات
+// 7. المنتجات
 // ==========================================
 function renderProducts() {
   let filtered = allProducts;
@@ -263,7 +297,7 @@ function renderProducts() {
 document.getElementById('searchShop').addEventListener('input', renderProducts);
 
 // ==========================================
-// نافذة تفاصيل المنتج
+// 8. نافذة تفاصيل المنتج
 // ==========================================
 window.openProductDetails = (productId) => {
   const product = allProducts.find(p => p.id === productId);
@@ -317,7 +351,7 @@ document.getElementById('productDetailsModal').addEventListener('click', (e) => 
 });
 
 // ==========================================
-// 7. السلة والعروض
+// 9. السلة والعروض
 // ==========================================
 window.handleAddToCart = (productId) => {
   const product = allProducts.find(p => p.id === productId);
@@ -480,32 +514,60 @@ document.getElementById('cartOverlay').addEventListener('click', (e) => {
 });
 
 // ==========================================
-// 8. إتمام الطلب
+// 10. إتمام الطلب + الحفظ في DB
 // ==========================================
-document.getElementById('checkoutBtn').addEventListener('click', () => {
+document.getElementById('checkoutBtn').addEventListener('click', async () => {
   if (cart.length === 0) { alert("السلة فاضية!"); return; }
   
   const customerName = currentUserData.displayName || currentUserData.username;
   const customerPhone = currentUserData.phone || "غير محدد";
+  
+  let total = 0;
+  const itemsForDB = cart.map(item => {
+    let lineTotal;
+    if (item.isOffer) lineTotal = item.price * item.payQty * (item.qty / (item.payQty + item.freeQty));
+    else lineTotal = item.price * item.qty;
+    total += lineTotal;
+    return {
+      productId: item.productId,
+      name: item.name,
+      price: item.price,
+      qty: item.qty,
+      lineTotal: parseFloat(lineTotal.toFixed(2)),
+      isOffer: item.isOffer || false,
+      payQty: item.payQty || null,
+      freeQty: item.freeQty || null
+    };
+  });
+  
+  try {
+    await addDoc(collection(db, "orders"), {
+      userId: currentUser.uid,
+      customerName,
+      customerPhone,
+      items: itemsForDB,
+      total: parseFloat(total.toFixed(2)),
+      currency: storeSettings.currency,
+      createdAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error("خطأ في حفظ الطلب:", err);
+    if (!confirm("ما قدرنا نحفظ الطلب. بتحب نكمل عبر واتساب على أي حال؟")) return;
+  }
   
   let message = `🌾 *طلب جديد من سنابل الخيرات* 🌾\n\n`;
   message += `👤 *الزبون:* ${customerName}\n`;
   message += `📞 *الهاتف:* ${customerPhone}\n`;
   message += `━━━━━━━━━━━━━━━━━━\n\n📦 *المنتجات:*\n\n`;
   
-  let total = 0;
-  cart.forEach((item, index) => {
+  itemsForDB.forEach((item, index) => {
     if (item.isOffer) {
-      const paid = item.price * item.payQty * (item.qty / (item.payQty + item.freeQty));
       message += `${index + 1}. ${item.name}\n`;
       message += `   الكمية: ${item.qty} (${item.payQty} مدفوع + ${item.freeQty} مجاني)\n`;
-      message += `   السعر: ${paid.toFixed(2)}${storeSettings.currency}\n\n`;
-      total += paid;
+      message += `   السعر: ${item.lineTotal}${storeSettings.currency}\n\n`;
     } else {
-      const lineTotal = item.price * item.qty;
       message += `${index + 1}. ${item.name}\n`;
-      message += `   الكمية: ${item.qty} × ${item.price}${storeSettings.currency} = ${lineTotal.toFixed(2)}${storeSettings.currency}\n\n`;
-      total += lineTotal;
+      message += `   الكمية: ${item.qty} × ${item.price}${storeSettings.currency} = ${item.lineTotal}${storeSettings.currency}\n\n`;
     }
   });
   
@@ -523,14 +585,106 @@ document.getElementById('checkoutBtn').addEventListener('click', () => {
 });
 
 // ==========================================
-// 9. البروفايل
+// 11. طلباتي
 // ==========================================
-document.getElementById('profileBtn').addEventListener('click', () => {
-  document.getElementById('profileModal').classList.remove('hidden');
+function loadMyOrders() {
+  onSnapshot(collection(db, "orders"), (snapshot) => {
+    myOrders = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.userId === currentUser.uid) {
+        myOrders.push({ id: doc.id, ...data });
+      }
+    });
+    myOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    renderMyOrders();
+  });
+}
+
+function renderMyOrders() {
+  const list = document.getElementById('myOrdersList');
+  
+  if (myOrders.length === 0) {
+    list.innerHTML = `<div class="empty-cart"><p>لا توجد طلبات سابقة.</p></div>`;
+    return;
+  }
+  
+  list.innerHTML = myOrders.map(order => {
+    const date = order.createdAt 
+      ? new Date(order.createdAt.seconds * 1000).toLocaleDateString('ar-EG', {
+          year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) 
+      : 'غير محدد';
+    
+    const itemsHtml = order.items.map(item => `
+      <div class="order-item-row">
+        <span>${item.name} × ${item.qty}</span>
+        <span>${item.lineTotal}${order.currency}</span>
+      </div>
+    `).join('');
+    
+    return `
+      <div class="order-card">
+        <div class="order-header">
+          <span class="order-date">📅 ${date}</span>
+          <span class="order-total">${order.total}${order.currency}</span>
+        </div>
+        <div class="order-items">${itemsHtml}</div>
+        <button class="reorder-btn" onclick="reorderItems('${order.id}')">🔄 إعادة الطلب</button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.reorderItems = (orderId) => {
+  const order = myOrders.find(o => o.id === orderId);
+  if (!order) return;
+  
+  if (cart.length > 0 && !confirm("عندك منتجات بالسلة. بتحب نضيف عليهم؟")) return;
+  
+  let addedCount = 0;
+  order.items.forEach(item => {
+    const product = allProducts.find(p => p.id === item.productId);
+    if (!product) return;
+    
+    if (item.isOffer) {
+      cart.push({
+        productId: item.productId,
+        name: item.name,
+        price: item.price,
+        imageUrl: product.imageUrl,
+        category: product.category,
+        qty: item.qty,
+        isOffer: true,
+        payQty: item.payQty,
+        freeQty: item.freeQty
+      });
+    } else {
+      const existing = cart.find(i => i.productId === item.productId && !i.isOffer);
+      if (existing) existing.qty += item.qty;
+      else {
+        cart.push({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          imageUrl: product.imageUrl,
+          category: product.category,
+          qty: item.qty
+        });
+      }
+    }
+    addedCount++;
+  });
+  
+  saveCart();
+  updateCartUI();
+  document.getElementById('myOrdersModal').classList.add('hidden');
+  alert(`تمت إضافة ${addedCount} منتج للسلة ✅`);
+};
+
+document.getElementById('closeMyOrdersBtn').addEventListener('click', () => {
+  document.getElementById('myOrdersModal').classList.add('hidden');
 });
-document.getElementById('closeProfileBtn').addEventListener('click', () => {
-  document.getElementById('profileModal').classList.add('hidden');
-});
-document.getElementById('profileModal').addEventListener('click', (e) => {
-  if (e.target.id === 'profileModal') document.getElementById('profileModal').classList.add('hidden');
+document.getElementById('myOrdersModal').addEventListener('click', (e) => {
+  if (e.target.id === 'myOrdersModal') document.getElementById('myOrdersModal').classList.add('hidden');
 });
