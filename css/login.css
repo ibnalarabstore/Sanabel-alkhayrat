@@ -1,22 +1,54 @@
 /* ============================================
-   تنسيقات صفحة تسجيل الدخول
+   تنسيقات صفحة تسجيل الدخول (نسخة محسّنة)
+   - RTL بالخصائص المنطقية (inline-start / inline-end)
+   - وصولية: focus واضح + دعم reduced-motion
+   - متجاوبة + دعم الوضع الداكن + safe-area
    ============================================ */
 
+/* قيم احتياطية: تعمل حتى لو لم تُعرّف المتغيرات في ملف آخر */
+:root {
+  --white: #ffffff;
+  --offwhite: #faf8f3;
+  --black: #1a1a1a;
+  --gold: #c9a227;
+  --text-muted: #6b6b6b;
+  --border: #e5e0d3;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --whatsapp: #25d366;
+  --whatsapp-dark: #128c7e;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --white: #1e1e1e;
+    --offwhite: #2a2a2a;
+    --black: #f5f5f5;
+    --text-muted: #a8a8a8;
+    --border: #3a3a3a;
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ===== الكرت الرئيسي ===== */
 .login-container {
   width: 100%;
-  max-width: 420px; /* عرض الكرت على الموبايل والكمبيوتر */
+  max-width: 420px;
+  margin-inline: auto;
   background: var(--white);
-  padding: 40px 30px;
+  padding: clamp(28px, 6vw, 40px) clamp(20px, 5vw, 30px);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
-  border-top: 5px solid var(--gold); /* لمسة ذهبية فوق */
-  animation: fadeIn 0.6s ease;
+  border-top: 5px solid var(--gold);
+  animation: fadeIn 0.6s var(--ease) both;
 }
 
 /* ===== الشعار والعنوان ===== */
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-block-end: 30px;
 }
 
 .logo-circle {
@@ -26,20 +58,21 @@
   background: var(--offwhite);
   border: 2px solid var(--gold);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 }
 
 .logo-icon {
   font-size: 35px;
+  line-height: 1;
 }
 
 .brand-name {
-  font-size: 1.8rem;
+  font-size: clamp(1.5rem, 5vw, 1.8rem);
   font-weight: 900;
+  line-height: 1.3;
   color: var(--black);
-  margin-bottom: 5px;
+  margin-block-end: 5px;
 }
 
 .brand-subtitle {
@@ -55,36 +88,45 @@
 }
 
 .password-wrapper input {
-  padding-left: 45px; /* مساحة للعين */
+  width: 100%;
+  padding-inline-end: 52px; /* مساحة للزر (يتبع اتجاه الصفحة) */
 }
 
 .toggle-password {
   position: absolute;
-  left: 10px;
+  inset-inline-end: 8px;
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;          /* حجم مناسب للمس */
   background: var(--offwhite);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 5px 8px;
+  border-radius: 8px;
   font-size: 1.1rem;
+  line-height: 1;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease);
 }
 
 .toggle-password:hover {
-  background: #eee;
+  background: var(--border);
+}
+
+.toggle-password:active {
+  transform: scale(0.95);
 }
 
 /* ===== قسم التواصل (واتساب) ===== */
 .contact-section {
-  margin-top: 10px;
+  margin-block-start: 10px;
   text-align: center;
 }
 
 .contact-text {
   font-size: 0.9rem;
   color: var(--text-muted);
-  margin-bottom: 15px;
-  line-height: 1.5;
+  margin-block-end: 15px;
+  line-height: 1.7;
 }
 
 .btn-whatsapp {
@@ -93,37 +135,79 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
+  min-height: 48px;
   padding: 12px;
-  background-color: #25D366; /* لون الواتساب */
-  color: white;
+  background-color: var(--whatsapp);
+  color: #0b3d1e;            /* تباين أفضل على الأخضر */
   font-weight: 700;
   border-radius: var(--radius-sm);
   text-decoration: none;
-  transition: 0.3s;
-  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.25);
+  transition: background-color 0.25s var(--ease),
+              color 0.25s var(--ease),
+              transform 0.25s var(--ease),
+              box-shadow 0.25s var(--ease);
 }
 
 .btn-whatsapp:hover {
-  background-color: #128C7E;
+  background-color: var(--whatsapp-dark);
+  color: #fff;
   transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(18, 140, 126, 0.3);
+}
+
+.btn-whatsapp:active {
+  transform: translateY(0);
 }
 
 .whatsapp-icon {
   font-size: 1.2rem;
 }
 
+/* ===== وصولية: تركيز واضح للوحة المفاتيح ===== */
+.toggle-password:focus-visible,
+.btn-whatsapp:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* ===== التذييل ===== */
 .login-footer {
-  margin-top: 30px;
+  margin-block-start: 30px;
+  padding-block-start: 15px;
   text-align: center;
   font-size: 0.8rem;
   color: var(--text-muted);
   border-top: 1px solid var(--border);
-  padding-top: 15px;
 }
 
 /* ===== أنيميشن ===== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== شاشات صغيرة جدًا ===== */
+@media (max-width: 360px) {
+  .logo-circle {
+    width: 60px;
+    height: 60px;
+  }
+  .logo-icon {
+    font-size: 30px;
+  }
+}
+
+/* ===== احترام من يفضّل تقليل الحركة ===== */
+@media (prefers-reduced-motion: reduce) {
+  .login-container {
+    animation: none;
+  }
+  .btn-whatsapp,
+  .toggle-password {
+    transition: none;
+  }
+  .btn-whatsapp:hover {
+    transform: none;
+  }
 }
