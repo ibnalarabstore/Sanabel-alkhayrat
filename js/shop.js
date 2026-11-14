@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, getDoc, setDoc, collection, orderBy, onSnapshot, arrayUnion, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, getDoc, setDoc, collection, query, where, orderBy, onSnapshot, arrayUnion, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // ==========================================
 // المتغيرات العامة
@@ -92,7 +92,6 @@ async function loadSettings() {
 // 3. المنتجات والتصنيفات والعروض
 // ==========================================
 function loadProducts() {
-  const q = orderBy("createdAt", "desc");
   onSnapshot(collection(db, "products"), (snapshot) => {
     allProducts = [];
     snapshot.forEach(doc => allProducts.push({ id: doc.id, ...doc.data() }));
@@ -134,7 +133,6 @@ function loadNotifications() {
 function updateNotifCount() {
   const unreadCount = allNotifications.filter(n => !readNotifications.includes(n.id)).length;
   
-  // عداد بالقائمة الجانبية
   const menuCountEl = document.getElementById('menuNotifCount');
   if (menuCountEl) {
     if (unreadCount > 0) {
@@ -145,7 +143,6 @@ function updateNotifCount() {
     }
   }
   
-  // نقطة على زر القائمة
   const dotEl = document.getElementById('notifDot');
   if (dotEl) {
     if (unreadCount > 0) dotEl.classList.remove('hidden');
@@ -197,13 +194,11 @@ sideMenuOverlay.addEventListener('click', (e) => {
   if (e.target === sideMenuOverlay) sideMenuOverlay.classList.add('hidden');
 });
 
-// فتح طلباتي من القائمة
 document.getElementById('menuMyOrdersBtn').addEventListener('click', () => {
   sideMenuOverlay.classList.add('hidden');
   document.getElementById('myOrdersModal').classList.remove('hidden');
 });
 
-// فتح الإشعارات من القائمة
 document.getElementById('menuNotifsBtn').addEventListener('click', async () => {
   sideMenuOverlay.classList.add('hidden');
   document.getElementById('notificationsModal').classList.remove('hidden');
@@ -585,19 +580,25 @@ document.getElementById('checkoutBtn').addEventListener('click', async () => {
 });
 
 // ==========================================
-// 11. طلباتي
+// 11. طلباتي (معدلة لتجنب مشكلة الـ Index)
 // ==========================================
 function loadMyOrders() {
-  onSnapshot(collection(db, "orders"), (snapshot) => {
+  const q = query(
+    collection(db, "orders"), 
+    where("userId", "==", currentUser.uid)
+  );
+
+  onSnapshot(q, (snapshot) => {
     myOrders = [];
     snapshot.forEach(doc => {
-      const data = doc.data();
-      if (data.userId === currentUser.uid) {
-        myOrders.push({ id: doc.id, ...data });
-      }
+      myOrders.push({ id: doc.id, ...doc.data() });
     });
+    // ترتيب يدوي (الأحدث أولاً)
     myOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
     renderMyOrders();
+  }, (error) => {
+    console.error("خطأ في جلب الطلبات:", error);
+    document.getElementById('myOrdersList').innerHTML = `<div class="empty-cart"><p>حدث خطأ في جلب الطلبات.</p></div>`;
   });
 }
 
