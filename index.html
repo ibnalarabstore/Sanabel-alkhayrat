@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>سنابل الخيرات للتموين - تسجيل الدخول</title>
-  
+  <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://i.ibb.co/7JyQRpYw/file-000000006b3482468b9d7b46985ebd55-1.png">
   <!-- الخطوط -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,6 +99,18 @@
 
   <!-- JS -->
   <script type="module" src="js/auth.js"></script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('Service Worker registered successfully');
+        })
+        .catch(error => {
+          console.log('Service Worker registration failed:', error);
+        });
+    });
+  }
+</script>
 </body>
 </html>
