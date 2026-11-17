@@ -2,6 +2,26 @@ import { auth } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { db } from './firebase-config.js';
+// إذا المستخدم مسجل دخول أصلاً، نحوله على طول (بدون ما يشوف صفحة الدخول)
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.role === 'admin' && !userData.isBlocked) {
+          window.location.href = 'admin.html';
+        } else if (!userData.isBlocked) {
+          window.location.href = 'shop.html';
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+});
 
 // ==========================================
 // 1. السنة الحالية في التذييل
