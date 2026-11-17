@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2F4A2B">
+  <title>لا يوجد اتصال | سنابل</title>
+  <style>
+    :root {
+      --bg: #EDF0E6;
+      --text: #1F2E1B;
+      --muted: #5B6A55;
+      --green: #2F4A2B;
+      --wheat: #C99A2E;
+      --on-green: #F4F6EF;
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #131810;
+        --text: #E6EBDD;
+        --muted: #9AA891;
+        --green: #7FA06F;
+        --wheat: #E0B04A;
+        --on-green: #10150D;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html, body { height: 100%; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, "Noto Naskh Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+      line-height: 1.7;
+    }
+    main { max-width: 380px; text-align: center; }
+    svg { width: 112px; height: 112px; margin-bottom: 20px; }
+    .stem { stroke: var(--green); }
+    .grain { fill: var(--wheat); }
+    h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    p { color: var(--muted); font-size: 1rem; margin-bottom: 28px; }
+    button {
+      font: inherit;
+      font-weight: 600;
+      padding: 12px 32px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--green);
+      color: var(--on-green);
+      cursor: pointer;
+    }
+    button:active { transform: scale(.97); }
+    button:focus-visible { outline: 3px solid var(--wheat); outline-offset: 3px; }
+    #status { margin-top: 18px; min-height: 1.7em; font-size: .9rem; color: var(--muted); }
+    .sway { transform-origin: 60px 108px; animation: sway 4s ease-in-out infinite; }
+    @keyframes sway { 50% { transform: rotate(-4deg); } }
+    @media (prefers-reduced-motion: reduce) { .sway { animation: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <svg viewBox="0 0 120 120" fill="none" aria-hidden="true">
+      <g class="sway">
+        <path class="stem" d="M60 108V34" stroke-width="4" stroke-linecap="round"/>
+        <ellipse class="grain" cx="60" cy="22" rx="7" ry="12"/>
+        <ellipse class="grain" cx="48" cy="38" rx="6" ry="11" transform="rotate(-28 48 38)"/>
+        <ellipse class="grain" cx="72" cy="38" rx="6" ry="11" transform="rotate(28 72 38)"/>
+        <ellipse class="grain" cx="47" cy="58" rx="6" ry="11" transform="rotate(-28 47 58)"/>
+        <ellipse class="grain" cx="73" cy="58" rx="6" ry="11" transform="rotate(28 73 58)"/>
+      </g>
+    </svg>
+
+    <h1>ما في اتصال بالإنترنت</h1>
+    <p>تأكد من الواي فاي أو بيانات الجوال، وجرب مرة ثانية. الصفحات اللي فتحتها قبل بتضل متاحة.</p>
+
+    <button id="retry" type="button">إعادة المحاولة</button>
+    <div id="status" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const status = document.getElementById('status');
+    const retry = document.getElementById('retry');
+
+    function goBack() {
+      // يرجع للصفحة اللي كان المستخدم بدو يفتحها
+      location.reload();
+    }
+
+    retry.addEventListener('click', () => {
+      status.textContent = 'جاري التحقق من الاتصال...';
+      // طلب خفيف للتأكد إنو النت فعلاً رجع، وليس فقط حالة الجهاز
+      fetch('/manifest.json', { cache: 'no-store' })
+        .then(res => res.ok ? goBack() : Promise.reject())
+        .catch(() => { status.textContent = 'لسا ما في اتصال.'; });
+    });
+
+    // رجوع تلقائي لما يرجع النت
+    window.addEventListener('online', goBack);
+  </script>
+</body>
+</html>
