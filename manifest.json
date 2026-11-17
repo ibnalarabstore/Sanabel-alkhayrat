@@ -1,0 +1,21 @@
+{
+  "name": "سنابل الخيرات للتموين",
+  "short_name": "سنابل الخيرات",
+  "description": "متجر الجملة الأول للمواد الغذائية",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f9f8f6",
+  "theme_color": "#d4af37",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/7JyQRpYw/file-000000006b3482468b9d7b46985ebd55-1.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.ibb.co/7JyQRpYw/file-000000006b3482468b9d7b46985ebd55-1.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
