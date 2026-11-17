@@ -1,9 +1,7 @@
-// استيراد الدوال اللازمة من Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// إعدادات Firebase الخاصة بمشروعك
 const firebaseConfig = {
   apiKey: "AIzaSyA3uFqdysDGvU-XQlZwfkL9feM2qJNpgEw",
   authDomain: "sanabel-5e166.firebaseapp.com",
@@ -14,10 +12,14 @@ const firebaseConfig = {
   measurementId: "G-DNT40RRSXC"
 };
 
-// تهيئة Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// تصدير المتغيرات عشان نستخدمها بباقي الملفات
+// ⚡ نضمن إنه الجلسة تنحفظ بشكل دائم (حتى لو سكر التطبيق)
+setPersistence(auth, browserLocalPersistence)
+  .catch((error) => {
+    console.error("خطأ في حفظ الجلسة:", error);
+  });
+
 export { auth, db };
