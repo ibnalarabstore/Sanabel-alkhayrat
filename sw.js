@@ -1,4 +1,4 @@
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC_CACHE = `sanabel-static-${VERSION}`;
 const RUNTIME_CACHE = `sanabel-runtime-${VERSION}`;
 const OFFLINE_URL = '/offline.html';
