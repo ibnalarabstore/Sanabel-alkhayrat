@@ -357,9 +357,8 @@ document.getElementById('searchCustomers').addEventListener('input', (e) => {
 });
 
 // ==========================================
-// 5. رفع الصور التلقائي (ImgBB)
+// 5. رفع الصور التلقائي (ImageKit)
 // ==========================================
-const IMGBB_API_KEY = "99bf37915afe5bdef0be905ae32d82fd";
 const imageFileInput = document.getElementById('productImageFile');
 const productImageField = document.getElementById('productImage');
 const uploadText = document.getElementById('uploadText');
@@ -368,29 +367,59 @@ const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 const imagePreview = document.getElementById('imagePreview');
 const removeImageBtn = document.getElementById('removeImageBtn');
 
-async function uploadImageToImgBB(file) {
+// الرابط العام من ImageKit
+const IMAGEKIT_URL = "https://ik.imagekit.io/sanabel";
+const IMAGEKIT_PUBLIC_KEY = "public_P86uu1VySy2+dBHckQj5ssnc0WU="; // مفاتيحك العامة (آمنة للعرض)
+
+async function uploadImageToImageKit(file) {
+  // 1. نطلب توقيع من الـ API
+  const authRes = await fetch('/api/imagekit-auth', { method: 'POST' });
+  if (!authRes.ok) throw new Error('فشل الاتصال بخادم الصور');
+  
+  const authData = await authRes.json();
+  
+  if (authData.error) throw new Error(authData.error);
+
+  // 2. نرفع الصورة باستخدام التوقيع
   const formData = new FormData();
-  formData.append('image', file);
-  const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-  const data = await response.json();
-  if (data.success) return data.data.url;
-  throw new Error('فشل رفع الصورة');
+  formData.append('file', file);
+  formData.append('fileName', `product_${Date.now()}_${file.name}`);
+  formData.append('publicKey', IMAGEKIT_PUBLIC_KEY);
+  formData.append('signature', authData.signature);
+  formData.append('expire', authData.expire);
+  formData.append('token', authData.token);
+  
+  const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+    method: 'POST',
+    body: formData
+  });
+
+  const uploadData = await uploadRes.json();
+  
+  if (uploadData.url) {
+    return uploadData.url;
+  } else {
+    throw new Error(uploadData.message || 'فشل رفع الصورة');
+  }
 }
 
 imageFileInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) return alert('حجم الصورة كبير جداً. الحد الأقصى 5 ميغابايت.');
+  
   uploadText.classList.add('hidden');
   uploadLoader.classList.remove('hidden');
+  
   try {
-    const imageUrl = await uploadImageToImgBB(file);
+    const imageUrl = await uploadImageToImageKit(file);
     productImageField.value = imageUrl;
     imagePreview.src = imageUrl;
     imagePreviewContainer.classList.remove('hidden');
     uploadText.textContent = '🔄 تغيير الصورة';
   } catch (error) {
     alert('حدث خطأ أثناء رفع الصورة: ' + error.message);
+    imageFileInput.value = '';
   } finally {
     uploadText.classList.remove('hidden');
     uploadLoader.classList.add('hidden');
