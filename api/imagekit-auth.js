@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 export default async function handler(req, res) {
   // التأكد إنه الطلب من نوع POST فقط
   if (req.method !== 'POST') {
